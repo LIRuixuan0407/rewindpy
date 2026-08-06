@@ -27,6 +27,22 @@ class CliTests(unittest.TestCase):
             self.assertIn("None value traced", html)
             self.assertIn("Crash Slice", html)
 
+    def test_doctor_reports_ready(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code = main(["--lang", "en", "doctor"])
+        self.assertEqual(code, 0)
+        self.assertIn("Status: READY", output.getvalue())
+        self.assertIn("Built-in demo smoke test: PASS", output.getvalue())
+
+    def test_doctor_supports_json_output(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code = main(["doctor", "--json"])
+        self.assertEqual(code, 0)
+        self.assertIn('"ready": true', output.getvalue())
+        self.assertIn('"demo_smoke_test": true', output.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

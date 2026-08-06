@@ -16,6 +16,7 @@ def run_target(
     *,
     output: Path,
     max_events: int = 5_000,
+    language: str = "en",
 ) -> int:
     target = target.resolve()
     if not target.is_file():
@@ -37,12 +38,12 @@ def run_target(
             return 0
         tracer.stop()
         crash = build_crash_info(type(exc), exc, exc.__traceback__, project_root)
-        _write(output, tracer, crash.to_dict(), target, target_args)
+        _write(output, tracer, crash.to_dict(), target, target_args, language)
         return int(code)
     except BaseException as exc:
         tracer.stop()
         crash = build_crash_info(type(exc), exc, exc.__traceback__, project_root)
-        _write(output, tracer, crash.to_dict(), target, target_args)
+        _write(output, tracer, crash.to_dict(), target, target_args, language)
         return 1
     finally:
         tracer.stop()
@@ -58,11 +59,13 @@ def _write(
     crash: dict,
     target: Path,
     target_args: Sequence[str],
+    language: str,
 ) -> None:
     events = tracer.event_dicts()
-    analysis = analyze_crash(events, crash)
+    analysis = analyze_crash(events, crash, language=language)
     payload = {
-        "version": 4,
+        "version": 5,
+        "language": language,
         "target": str(target),
         "arguments": list(target_args),
         "crash": crash,

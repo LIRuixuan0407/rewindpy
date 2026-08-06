@@ -1,0 +1,25 @@
+name: Feature request / 功能建议
+description: Propose a focused debugging capability / 提议一个聚焦的调试能力
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Debugging problem / 调试问题
+      description: What concrete debugging task is difficult today? / 当前哪个具体调试任务很困难？
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome / 期望结果
+      description: What should RewindPy show or do? / 希望 RewindPy 展示或完成什么？
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Minimal example / 最小示例
+      description: Add a small Python example that demonstrates the need. / 提供一个能说明需求的小型 Python 示例。
+      render: python

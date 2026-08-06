@@ -5,6 +5,8 @@ import re
 from difflib import get_close_matches
 from typing import Any
 
+from .i18n import text
+
 
 _NONE_ATTRIBUTE_PATTERN = re.compile(
     r"'NoneType' object has no attribute '([^']+)'"
@@ -15,6 +17,8 @@ _NOT_SET = "<not set>"
 def analyze_crash(
     events: list[dict[str, Any]],
     crash: dict[str, Any],
+    *,
+    language: str = "en",
 ) -> dict[str, Any] | None:
     """Find a likely earlier state change that explains the crash.
 
@@ -24,15 +28,16 @@ def analyze_crash(
     """
     exception_type = crash.get("exception_type")
     if exception_type == "KeyError":
-        return _analyze_keyerror(events, crash)
+        return _analyze_keyerror(events, crash, language)
     if exception_type == "AttributeError":
-        return _analyze_none_attribute_error(events, crash)
+        return _analyze_none_attribute_error(events, crash, language)
     return None
 
 
 def _analyze_keyerror(
     events: list[dict[str, Any]],
     crash: dict[str, Any],
+    language: str,
 ) -> dict[str, Any] | None:
     missing_key = _parse_keyerror_key(str(crash.get("message", "")))
     if missing_key is None:
@@ -59,12 +64,21 @@ def _analyze_keyerror(
             if container_path:
                 variable_path += "".join(f"[{part!r}]" for part in container_path)
 
+            title_i18n = {
+                code: text(code, "missing_key_title") for code in ("en", "zh")
+            }
+            summary_i18n = {
+                code: _build_key_summary(
+                    str(missing_key), distance, variable_path, likely_replacement, code
+                )
+                for code in ("en", "zh")
+            }
             return {
                 "kind": "missing-key-origin",
-                "title": "Missing key traced",
-                "summary": _build_key_summary(
-                    str(missing_key), distance, variable_path, likely_replacement
-                ),
+                "title": title_i18n[language],
+                "summary": summary_i18n[language],
+                "title_i18n": title_i18n,
+                "summary_i18n": summary_i18n,
                 "missing_key": missing_key,
                 "origin_step": origin_step,
                 "crash_step": crash_step,
@@ -86,6 +100,7 @@ def _analyze_keyerror(
 def _analyze_none_attribute_error(
     events: list[dict[str, Any]],
     crash: dict[str, Any],
+    language: str,
 ) -> dict[str, Any] | None:
     attribute = _parse_none_attribute(str(crash.get("message", "")))
     if attribute is None or not events:
@@ -145,17 +160,24 @@ def _analyze_none_attribute_error(
     crash_step = int(crash_event.get("step", 0))
     origin_step = int(origin_event.get("step", 0))
     distance = max(0, crash_step - origin_step)
-    summary = _build_none_summary(
-        variable=variable,
-        upstream_variable=upstream_variable,
-        producer_function=producer_function,
-        distance=distance,
-    )
+    title_i18n = {code: text(code, "none_title") for code in ("en", "zh")}
+    summary_i18n = {
+        code: _build_none_summary(
+            variable=variable,
+            upstream_variable=upstream_variable,
+            producer_function=producer_function,
+            distance=distance,
+            language=code,
+        )
+        for code in ("en", "zh")
+    }
 
     return {
         "kind": "none-value-origin",
-        "title": "None value traced",
-        "summary": summary,
+        "title": title_i18n[language],
+        "summary": summary_i18n[language],
+        "title_i18n": title_i18n,
+        "summary_i18n": summary_i18n,
         "attribute": attribute,
         "variable": variable,
         "upstream_variable": upstream_variable,
@@ -371,14 +393,26 @@ def _build_key_summary(
     distance: int,
     variable: str,
     likely_replacement: str | None,
+    language: str,
 ) -> str:
-    step_word = "step" if distance == 1 else "steps"
-    summary = (
-        f"Key {missing_key!r} disappeared from {variable} "
-        f"{distance} {step_word} before the crash."
+    step_word = text(
+        language,
+        "step_singular" if distance == 1 else "step_plural",
+    )
+    summary = text(
+        language,
+        "missing_key_summary",
+        key=missing_key,
+        variable=variable,
+        distance=distance,
+        step_word=step_word,
     )
     if likely_replacement:
-        summary += f" It may have been renamed to {likely_replacement!r}."
+        summary += text(
+            language,
+            "missing_key_rename",
+            replacement=likely_replacement,
+        )
     return summary
 
 
@@ -388,20 +422,38 @@ def _build_none_summary(
     upstream_variable: str,
     producer_function: Any,
     distance: int,
+    language: str,
 ) -> str:
-    step_word = "step" if distance == 1 else "steps"
+    step_word = text(
+        language,
+        "step_singular" if distance == 1 else "step_plural",
+    )
     if producer_function:
         if upstream_variable != variable:
-            return (
-                f"{variable!r} received None through {upstream_variable!r}. "
-                f"{producer_function}() returned None {distance} {step_word} "
-                "before the crash."
+            return text(
+                language,
+                "none_summary_through",
+                variable=variable,
+                upstream=upstream_variable,
+                producer=producer_function,
+                distance=distance,
+                step_word=step_word,
             )
-        return (
-            f"{variable!r} received None from {producer_function}() "
-            f"{distance} {step_word} before the crash."
+        return text(
+            language,
+            "none_summary_from",
+            variable=variable,
+            producer=producer_function,
+            distance=distance,
+            step_word=step_word,
         )
-    return f"{variable!r} became None {distance} {step_word} before the crash."
+    return text(
+        language,
+        "none_summary_became",
+        variable=variable,
+        distance=distance,
+        step_word=step_word,
+    )
 
 
 def build_crash_slice(

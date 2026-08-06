@@ -4,6 +4,7 @@ import tempfile
 import webbrowser
 from pathlib import Path
 
+from .i18n import text
 from .runner import run_target
 
 _DEMOS = {
@@ -58,20 +59,27 @@ def create_demo_report(
     output: Path,
     max_events: int = 5_000,
     open_report: bool = False,
+    language: str = "en",
 ) -> Path:
     try:
         source = _DEMOS[kind]
     except KeyError as exc:
-        raise ValueError(f"Unknown demo: {kind}") from exc
+        raise ValueError(text(language, "unknown_demo", kind=kind)) from exc
 
     output = output.resolve()
     with tempfile.TemporaryDirectory(prefix="rewindpy-demo-") as temp_dir:
         target = Path(temp_dir) / f"{kind.replace('-', '_')}.py"
         target.write_text(source, encoding="utf-8")
-        run_target(target, [], output=output, max_events=max_events)
+        run_target(
+            target,
+            [],
+            output=output,
+            max_events=max_events,
+            language=language,
+        )
 
     if not output.is_file():
-        raise RuntimeError("The demo did not produce a crash report.")
+        raise RuntimeError(text(language, "demo_failed"))
     if open_report:
         webbrowser.open(output.as_uri())
     return output

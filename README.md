@@ -1,5 +1,7 @@
 <div align="center">
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 # ⏪ RewindPy
 
 ### Your Python program crashed. Rewind it.
@@ -24,15 +26,20 @@ cd rewindpy
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 python -m pip install .
+rewindpy doctor
 rewindpy demo --open
 ```
 
-The built-in demo intentionally crashes, generates `rewindpy-demo.html`, and exits successfully so you can explore the report immediately.
+`rewindpy doctor` checks the interpreter, output permissions, and a complete built-in report smoke test. The demo intentionally crashes, generates `rewindpy-demo.html`, and exits successfully so you can explore the report immediately.
 
 ## Debug your own script
 
 ```bash
 rewindpy run --open app.py
+
+# Force Chinese or English output
+rewindpy --lang zh run --open app.py
+rewindpy --lang en run --open app.py
 ```
 
 Choose the report path and pass arguments to the target program:
@@ -66,9 +73,13 @@ rewindpy demo crash-slice --open
 
 ```text
 rewindpy --version
-rewindpy demo [none-origin|key-error|crash-slice] [--output FILE] [--open]
-rewindpy run SCRIPT [--output FILE] [--max-events N] [--open] [-- ARGS...]
+rewindpy --lang zh --help
+rewindpy doctor [--json]
+rewindpy [--lang auto|en|zh] demo [none-origin|key-error|crash-slice] [--output FILE] [--open]
+rewindpy [--lang auto|en|zh] run SCRIPT [--output FILE] [--max-events N] [--open] [-- ARGS...]
 ```
+
+The CLI auto-detects Chinese locales. You can also set `REWINDPY_LANG=zh` or use `--lang zh`. Generated reports include an `EN / 中文` switch.
 
 ## Current scope
 
@@ -84,12 +95,14 @@ Crash reports can contain runtime data. RewindPy writes them locally and redacts
 
 ```bash
 python -m pip install -e ".[dev]"
+python -m ruff check .
 python -m pytest -q
+rewindpy doctor
 python -m build
 python -m twine check dist/*
 ```
 
-See [RELEASING.md](RELEASING.md) for the release process and [CHANGELOG.md](CHANGELOG.md) for version history.
+See [CONTRIBUTING.md](CONTRIBUTING.md) to contribute, [SECURITY.md](SECURITY.md) for private vulnerability reporting, [RELEASING.md](RELEASING.md) for the release process, and [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## License
 

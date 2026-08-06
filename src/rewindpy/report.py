@@ -5,6 +5,62 @@ from pathlib import Path
 from typing import Any
 
 
+_REPORT_MESSAGES: dict[str, dict[str, str]] = {
+    "en": {
+        "report_title": "RewindPy crash report",
+        "timeline_view": "Timeline view",
+        "crash_slice": "Crash Slice",
+        "all_events": "All Events",
+        "local_report": "local report",
+        "source": "Source",
+        "execution_state": "Execution state",
+        "likely_origin": "Likely origin",
+        "variable_changes": "Variable changes",
+        "locals_snapshot": "Locals snapshot",
+        "source_unavailable": "Source unavailable.",
+        "no_origin": "No earlier value origin was identified for this crash.",
+        "possible_rename": "Possible rename",
+        "produced_by": "Produced by",
+        "returning_none": "returning None",
+        "assigned_none": "was assigned None",
+        "jump_to_step": "Jump to step",
+        "no_changes": "No local variable changes on this step.",
+        "no_events": "No execution events were captured.",
+        "step": "Step",
+        "events": "events",
+        "of": "of",
+        "changes_caused": "changes caused by line",
+        "probable_cause": "Probable cause found",
+    },
+    "zh": {
+        "report_title": "RewindPy 崩溃报告",
+        "timeline_view": "时间线视图",
+        "crash_slice": "崩溃切片",
+        "all_events": "全部事件",
+        "local_report": "本地报告",
+        "source": "源代码",
+        "execution_state": "执行状态",
+        "likely_origin": "可能来源",
+        "variable_changes": "变量变化",
+        "locals_snapshot": "局部变量快照",
+        "source_unavailable": "无法获取源代码。",
+        "no_origin": "没有为这次崩溃找到可信的更早数值来源。",
+        "possible_rename": "可能的重命名",
+        "produced_by": "来源函数",
+        "returning_none": "返回了 None",
+        "assigned_none": "被赋值为 None",
+        "jump_to_step": "跳转到步骤",
+        "no_changes": "这一步没有局部变量变化。",
+        "no_events": "没有捕获到执行事件。",
+        "step": "步骤",
+        "events": "个事件",
+        "of": "/",
+        "changes_caused": "变量变化由代码行触发",
+        "probable_cause": "已找到可能原因",
+    },
+}
+
+
 HTML_TEMPLATE = r'''<!doctype html>
 <html lang="en">
 <head>
@@ -19,6 +75,8 @@ header { padding: 18px 24px; border-bottom: 1px solid #26304c; display:flex; ali
 h1 { margin:0; font-size:20px; }
 .crash { color:#ff9b9b; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .header-tools { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
+.language-switch { display:flex; gap:4px; margin-left:4px; }
+.language-button.active { background:#2c4170; color:#fff; }
 .view-switch { display:flex; gap:4px; padding:3px; border:1px solid #334262; border-radius:10px; background:#11182b; }
 .view-button { border:0; background:transparent; color:#9fb0d6; }
 .view-button.active { background:#2c4170; color:#fff; }
@@ -63,11 +121,15 @@ button:disabled { cursor:not-allowed; opacity:.45; }
 <header>
   <div><h1>⏪ RewindPy</h1><div class="crash" id="crashTitle"></div></div>
   <div class="header-tools">
-    <div class="view-switch" aria-label="Timeline view">
+    <div class="view-switch" id="viewSwitch" aria-label="Timeline view">
       <button class="view-button" id="sliceView">Crash Slice</button>
       <button class="view-button" id="allView">All Events</button>
     </div>
-    <span class="badge">local report</span>
+    <div class="language-switch" aria-label="Language / 语言">
+      <button class="language-button" id="langEn">EN</button>
+      <button class="language-button" id="langZh">中文</button>
+    </div>
+    <span class="badge" id="localReport">local report</span>
     <span class="badge" id="eventCount"></span>
   </div>
 </header>
@@ -77,13 +139,13 @@ button:disabled { cursor:not-allowed; opacity:.45; }
     <pre id="code"></pre>
   </section>
   <section class="panel">
-    <div class="panel-title">Execution state</div>
+    <div class="panel-title" id="executionStateTitle">Execution state</div>
     <div class="meta" id="eventMeta"></div>
-    <div class="panel-title">Likely origin</div>
+    <div class="panel-title" id="likelyOriginTitle">Likely origin</div>
     <div id="origin"></div>
-    <div class="panel-title">Variable changes</div>
+    <div class="panel-title" id="variableChangesTitle">Variable changes</div>
     <div id="changes"></div>
-    <div class="panel-title">Locals snapshot</div>
+    <div class="panel-title" id="localsSnapshotTitle">Locals snapshot</div>
     <pre class="meta" id="locals"></pre>
   </section>
 </main>
@@ -99,6 +161,13 @@ button:disabled { cursor:not-allowed; opacity:.45; }
 <script id="rewind-data" type="application/json">__DATA__</script>
 <script>
 const data = JSON.parse(document.getElementById('rewind-data').textContent);
+const translations = data.translations || {};
+let language = data.language === 'zh' ? 'zh' : 'en';
+function tr(key) { return (translations[language] || translations.en || {})[key] || key; }
+function localized(object, field) {
+  const values = object?.[`${field}_i18n`] || {};
+  return values[language] || object?.[field] || '';
+}
 const allEvents = data.events || [];
 const sources = data.sources || {};
 const crash = data.crash || {};
@@ -108,6 +177,8 @@ const sliceSteps = new Set(crashSlice.steps || []);
 const slider = document.getElementById('slider');
 const sliceButton = document.getElementById('sliceView');
 const allButton = document.getElementById('allView');
+const langEnButton = document.getElementById('langEn');
+const langZhButton = document.getElementById('langZh');
 let mode = sliceSteps.size ? 'slice' : 'all';
 let events = eventsForMode(mode);
 
@@ -140,8 +211,8 @@ function updateViewControls() {
   sliceButton.classList.toggle('active', mode === 'slice');
   allButton.classList.toggle('active', mode === 'all');
   sliceButton.disabled = !sliceSteps.size;
-  const label = mode === 'slice' ? 'Crash Slice' : 'All Events';
-  document.getElementById('eventCount').textContent = `${label} · ${events.length} of ${allEvents.length} events`;
+  const label = mode === 'slice' ? tr('crash_slice') : tr('all_events');
+  document.getElementById('eventCount').textContent = `${label} · ${events.length} ${tr('of')} ${allEvents.length} ${tr('events')}`;
 }
 function setView(nextMode, preferredStep = null) {
   const currentEvent = events[Number(slider.value)] || events[events.length - 1];
@@ -156,7 +227,7 @@ function setView(nextMode, preferredStep = null) {
 function renderCode(event) {
   const lines = sources[event.file] || [];
   const html = lines.map((line, i) => `<span class="code-line ${i + 1 === event.line ? 'active' : ''}" data-line="${i + 1}">${escapeHtml(line)}</span>`).join('\n');
-  document.getElementById('code').innerHTML = html || '<span class="empty">Source unavailable.</span>';
+  document.getElementById('code').innerHTML = html || `<span class="empty">${escapeHtml(tr('source_unavailable'))}</span>`;
   document.getElementById('fileTitle').textContent = event.file;
   const active = document.querySelector('.code-line.active');
   if (active) active.scrollIntoView({block:'center'});
@@ -164,23 +235,23 @@ function renderCode(event) {
 function renderOrigin() {
   const container = document.getElementById('origin');
   if (!analysis) {
-    container.innerHTML = '<div class="empty">No earlier value origin was identified for this crash.</div>';
+    container.innerHTML = `<div class="empty">${escapeHtml(tr('no_origin'))}</div>`;
     return;
   }
   const replacement = analysis.likely_replacement
-    ? `<div class="origin-hint">Possible rename: <code>${escapeHtml(analysis.missing_key)}</code> → <code>${escapeHtml(analysis.likely_replacement)}</code></div>`
+    ? `<div class="origin-hint">${escapeHtml(tr('possible_rename'))}: <code>${escapeHtml(analysis.missing_key)}</code> → <code>${escapeHtml(analysis.likely_replacement)}</code></div>`
     : '';
   const noneHint = analysis.kind === 'none-value-origin'
     ? `<div class="origin-hint">${analysis.producer_function
-        ? `Produced by <code>${escapeHtml(analysis.producer_function)}()</code> returning <code>None</code>.`
-        : `<code>${escapeHtml(analysis.variable)}</code> was assigned <code>None</code>.`}</div>`
+        ? `${escapeHtml(tr('produced_by'))} <code>${escapeHtml(analysis.producer_function)}()</code>，${escapeHtml(tr('returning_none'))}.`
+        : `<code>${escapeHtml(analysis.variable)}</code> ${escapeHtml(tr('assigned_none'))}.`}</div>`
     : '';
   container.innerHTML = `
     <div class="origin">
-      <div class="origin-title">${escapeHtml(analysis.title || 'Probable cause found')}</div>
-      <div class="origin-summary">${escapeHtml(analysis.summary)}</div>
+      <div class="origin-title">${escapeHtml(localized(analysis, 'title') || tr('probable_cause'))}</div>
+      <div class="origin-summary">${escapeHtml(localized(analysis, 'summary'))}</div>
       <div class="origin-location">${escapeHtml(analysis.file)}:${escapeHtml(analysis.line)} in ${escapeHtml(analysis.function)}()</div>
-      <button id="jumpOrigin">Jump to step ${escapeHtml(analysis.origin_step)}</button>
+      <button id="jumpOrigin">${escapeHtml(tr('jump_to_step'))} ${escapeHtml(analysis.origin_step)}</button>
       ${replacement}
       ${noneHint}
     </div>`;
@@ -194,7 +265,7 @@ function renderChanges(event) {
   const container = document.getElementById('changes');
   const names = Object.keys(changes);
   if (!names.length) {
-    container.innerHTML = '<div class="empty">No local variable changes on this step.</div>';
+    container.innerHTML = `<div class="empty">${escapeHtml(tr('no_changes'))}</div>`;
     return;
   }
   container.innerHTML = names.map(name => {
@@ -204,7 +275,7 @@ function renderChanges(event) {
 }
 function render(index) {
   if (!events.length) {
-    document.getElementById('code').innerHTML = '<span class="empty">No execution events were captured.</span>';
+    document.getElementById('code').innerHTML = `<span class="empty">${escapeHtml(tr('no_events'))}</span>`;
     return;
   }
   const safeIndex = Math.max(0, Math.min(index, events.length - 1));
@@ -218,10 +289,10 @@ function render(index) {
     `<span class="badge">${escapeHtml(event.function)}</span>`,
     event.exception_type ? `<div class="crash">${escapeHtml(event.exception_type)}: ${escapeHtml(event.exception_message || '')}</div>` : ''
   ].join('');
-  const viewLabel = mode === 'slice' ? 'Crash Slice' : 'All Events';
-  document.getElementById('stepLabel').textContent = `Step ${event.step} · ${safeIndex + 1}/${events.length} · ${viewLabel}`;
+  const viewLabel = mode === 'slice' ? tr('crash_slice') : tr('all_events');
+  document.getElementById('stepLabel').textContent = `${tr('step')} ${event.step} · ${safeIndex + 1}/${events.length} · ${viewLabel}`;
   const changeLocation = event.change_line && Object.keys(event.changes || {}).length
-    ? ` · changes caused by line ${event.change_line}`
+    ? ` · ${tr('changes_caused')} ${event.change_line}`
     : '';
   document.getElementById('location').textContent = `${event.file}:${event.line} in ${event.function}()${changeLocation}`;
   document.getElementById('prev').disabled = safeIndex === 0;
@@ -232,11 +303,31 @@ document.getElementById('prev').onclick = () => render(Number(slider.value) - 1)
 document.getElementById('next').onclick = () => render(Number(slider.value) + 1);
 sliceButton.onclick = () => setView('slice');
 allButton.onclick = () => setView('all');
+function applyLanguage(nextLanguage) {
+  language = nextLanguage === 'zh' ? 'zh' : 'en';
+  document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
+  document.title = tr('report_title');
+  document.getElementById('viewSwitch').setAttribute('aria-label', tr('timeline_view'));
+  sliceButton.textContent = tr('crash_slice');
+  allButton.textContent = tr('all_events');
+  document.getElementById('localReport').textContent = tr('local_report');
+  document.getElementById('executionStateTitle').textContent = tr('execution_state');
+  document.getElementById('likelyOriginTitle').textContent = tr('likely_origin');
+  document.getElementById('variableChangesTitle').textContent = tr('variable_changes');
+  document.getElementById('localsSnapshotTitle').textContent = tr('locals_snapshot');
+  langEnButton.classList.toggle('active', language === 'en');
+  langZhButton.classList.toggle('active', language === 'zh');
+  renderOrigin();
+  updateViewControls();
+  render(Number(slider.value));
+}
+langEnButton.onclick = () => applyLanguage('en');
+langZhButton.onclick = () => applyLanguage('zh');
 document.addEventListener('keydown', event => {
   if (event.key === 'ArrowLeft') document.getElementById('prev').click();
   if (event.key === 'ArrowRight') document.getElementById('next').click();
 });
-renderOrigin();
+applyLanguage(language);
 setView(mode, allEvents[allEvents.length - 1]?.step);
 </script>
 </body>
@@ -246,5 +337,7 @@ setView(mode, allEvents[allEvents.length - 1]?.step);
 
 def write_report(output_path: Path, payload: dict[str, Any]) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    encoded = json.dumps(payload, ensure_ascii=False).replace("</", "<\\/")
+    document = dict(payload)
+    document["translations"] = _REPORT_MESSAGES
+    encoded = json.dumps(document, ensure_ascii=False).replace("</", "<\\/")
     output_path.write_text(HTML_TEMPLATE.replace("__DATA__", encoded), encoding="utf-8")

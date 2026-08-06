@@ -1,0 +1,38 @@
+name: Bug report / Bug 报告
+description: Report a reproducible RewindPy problem / 报告可复现的问题
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Crash reports may contain runtime data; review them before attaching.
+        感谢反馈。崩溃报告可能包含运行时数据，请在上传前仔细检查并脱敏。
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened? / 发生了什么？
+      description: Describe the observed and expected behavior. / 描述实际表现和预期表现。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction / 最小复现
+      description: Include the smallest script and exact command. / 提供最小脚本和完整命令。
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: RewindPy doctor output / 环境诊断输出
+      description: Run `rewindpy doctor --json` and review it before sharing. / 执行该命令并在分享前检查内容。
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context / 其他信息
+      description: Add traceback text, screenshots, or a redacted report. / 可附加 Traceback、截图或脱敏报告。

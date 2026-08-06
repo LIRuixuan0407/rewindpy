@@ -2,6 +2,16 @@
 
 All notable changes to RewindPy are documented here.
 
+## [Unreleased]
+
+### Added
+
+- English and Simplified Chinese CLI, crash-report UI, and README documentation.
+- `--lang auto|en|zh` and `REWINDPY_LANG` language selection.
+- `rewindpy doctor` environment and end-to-end report diagnostics.
+- Contributor, security, issue, and pull-request guidance in both languages.
+- Ruff linting and built-wheel smoke testing in CI.
+
 ## [0.1.0] - 2026-08-06
 
 ### Added
