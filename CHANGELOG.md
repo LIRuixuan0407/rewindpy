@@ -35,3 +35,8 @@ All notable changes to RewindPy are documented here.
 - Local secret redaction and bounded event recording.
 - Built-in `rewindpy demo` command for a zero-setup first run.
 - Python package metadata, CI, release automation, and release documentation.
+
+### Added
+
+- Added `pytest --rewind` integration for generating one local report per failed test.
+- Added `--rewind-dir`, `--rewind-max-events`, `--rewind-max-report-mb`, and `--rewind-lang` options.

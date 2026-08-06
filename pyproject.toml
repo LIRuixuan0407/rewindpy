@@ -39,6 +39,9 @@ dev = ["build>=1.2", "pytest>=8", "ruff>=0.12", "twine>=5"]
 [project.scripts]
 rewindpy = "rewindpy.cli:main"
 
+[project.entry-points.pytest11]
+rewindpy = "rewindpy.pytest_plugin"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 

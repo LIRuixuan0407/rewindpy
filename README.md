@@ -123,3 +123,14 @@ rewindpy run --max-events 5000 --max-report-mb 10 app.py
 ```
 
 RewindPy compresses repeated loops and prioritizes crash slices, exception events, and value origins when a report exceeds its budget.
+
+## pytest integration
+
+After installing RewindPy in your test environment, generate a local report for every failed test:
+
+```bash
+pytest --rewind
+pytest --rewind --rewind-dir reports --rewind-lang zh
+```
+
+Passing tests do not create reports. Failed-test reports are written to `.rewindpy/` by default, while pytest keeps its original output and exit code.

@@ -120,3 +120,14 @@ rewindpy run --max-events 5000 --max-report-mb 10 app.py
 ```
 
 RewindPy 会压缩重复循环，并在报告超过预算时优先保留崩溃切片、异常事件和数值来源。
+
+## pytest 集成
+
+在测试环境中安装 RewindPy 后，可以为每个失败测试生成本地回放报告：
+
+```bash
+pytest --rewind
+pytest --rewind --rewind-dir reports --rewind-lang zh
+```
+
+成功测试不会生成报告。失败报告默认写入 `.rewindpy/`，pytest 原有的错误输出和退出码保持不变。
