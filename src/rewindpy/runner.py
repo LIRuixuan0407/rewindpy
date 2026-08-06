@@ -62,7 +62,7 @@ def _write(
     events = tracer.event_dicts()
     analysis = analyze_crash(events, crash)
     payload = {
-        "version": 3,
+        "version": 4,
         "target": str(target),
         "arguments": list(target_args),
         "crash": crash,

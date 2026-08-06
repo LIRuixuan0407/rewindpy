@@ -64,6 +64,42 @@ class RunnerTests(unittest.TestCase):
             )
 
 
+    def test_none_attribute_report_contains_return_origin(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            script = root / "none_value.py"
+            report = root / "report.html"
+            script.write_text(
+                "def find_user():\n"
+                "    return None\n\n"
+                "def render(user):\n"
+                "    return user.name\n\n"
+                "current_user = find_user()\n"
+                "print(render(current_user))\n",
+                encoding="utf-8",
+            )
+
+            code = run_target(script, [], output=report, max_events=100)
+
+            self.assertEqual(code, 1)
+            html = report.read_text(encoding="utf-8")
+            match = re.search(
+                r'<script id="rewind-data" type="application/json">(.*?)</script>',
+                html,
+                re.DOTALL,
+            )
+            self.assertIsNotNone(match)
+            assert match is not None
+            payload = json.loads(match.group(1))
+            analysis = payload["analysis"]
+            self.assertEqual(analysis["kind"], "none-value-origin")
+            self.assertEqual(analysis["variable"], "user")
+            self.assertEqual(analysis["upstream_variable"], "current_user")
+            self.assertEqual(analysis["producer_function"], "find_user")
+            self.assertEqual(analysis["line"], 2)
+            self.assertIn(analysis["origin_step"], payload["crash_slice"]["steps"])
+
+
     def test_success_does_not_create_report(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

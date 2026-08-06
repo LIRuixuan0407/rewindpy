@@ -80,6 +80,10 @@ class RewindTracer:
         if event == "line":
             self._previous_lines[frame_key] = frame.f_lineno
 
+        return_value: Any = None
+        if event == "return":
+            return_value = self.serializer.serialize(arg)
+
         exception_type: str | None = None
         exception_message: str | None = None
         if event == "exception" and isinstance(arg, tuple) and len(arg) == 3:
@@ -99,6 +103,7 @@ class RewindTracer:
                 locals=locals_snapshot,
                 changes=changes,
                 change_line=change_line,
+                return_value=return_value,
                 exception_type=exception_type,
                 exception_message=exception_message,
             )

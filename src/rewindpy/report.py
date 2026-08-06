@@ -170,13 +170,19 @@ function renderOrigin() {
   const replacement = analysis.likely_replacement
     ? `<div class="origin-hint">Possible rename: <code>${escapeHtml(analysis.missing_key)}</code> → <code>${escapeHtml(analysis.likely_replacement)}</code></div>`
     : '';
+  const noneHint = analysis.kind === 'none-value-origin'
+    ? `<div class="origin-hint">${analysis.producer_function
+        ? `Produced by <code>${escapeHtml(analysis.producer_function)}()</code> returning <code>None</code>.`
+        : `<code>${escapeHtml(analysis.variable)}</code> was assigned <code>None</code>.`}</div>`
+    : '';
   container.innerHTML = `
     <div class="origin">
-      <div class="origin-title">Probable cause found</div>
+      <div class="origin-title">${escapeHtml(analysis.title || 'Probable cause found')}</div>
       <div class="origin-summary">${escapeHtml(analysis.summary)}</div>
       <div class="origin-location">${escapeHtml(analysis.file)}:${escapeHtml(analysis.line)} in ${escapeHtml(analysis.function)}()</div>
       <button id="jumpOrigin">Jump to step ${escapeHtml(analysis.origin_step)}</button>
       ${replacement}
+      ${noneHint}
     </div>`;
   document.getElementById('jumpOrigin').onclick = () => {
     const targetMode = sliceSteps.has(analysis.origin_step) ? 'slice' : 'all';
