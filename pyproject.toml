@@ -8,15 +8,33 @@ version = "0.1.0"
 description = "A post-crash time-travel debugger for Python."
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
-authors = [{name = "RewindPy contributors"}]
+license = {file = "LICENSE"}
+authors = [{name = "Li Ruixuan"}]
 keywords = ["debugger", "traceback", "time-travel", "python", "visualization"]
 classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
+  "Topic :: Software Development :: Debuggers",
 ]
+
+[project.urls]
+Homepage = "https://github.com/LIRuixuan0407/rewindpy"
+Repository = "https://github.com/LIRuixuan0407/rewindpy"
+Issues = "https://github.com/LIRuixuan0407/rewindpy/issues"
+Changelog = "https://github.com/LIRuixuan0407/rewindpy/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = ["build>=1.2", "pytest>=8", "twine>=5"]
 
 [project.scripts]
 rewindpy = "rewindpy.cli:main"
