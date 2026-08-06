@@ -45,6 +45,10 @@ class TraceStats:
     traced_files: int
     excluded_events: int
     duration_seconds: float
+    report_events: int = 0
+    compressed_events: int = 0
+    report_trimmed_events: int = 0
+    report_size_bytes: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

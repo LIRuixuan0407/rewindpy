@@ -35,6 +35,12 @@ _REPORT_MESSAGES: dict[str, dict[str, str]] = {
         "discarded": "discarded",
         "files": "files",
         "trace_time": "trace time",
+        "compressed": "compressed",
+        "trimmed": "trimmed for report size",
+        "report_size": "report data",
+        "repeated_cycle": "Repeated cycle",
+        "times": "times",
+        "steps": "steps",
     },
     "zh": {
         "report_title": "RewindPy 崩溃报告",
@@ -65,6 +71,12 @@ _REPORT_MESSAGES: dict[str, dict[str, str]] = {
         "discarded": "已丢弃",
         "files": "个文件",
         "trace_time": "追踪耗时",
+        "compressed": "已压缩",
+        "trimmed": "因报告体积裁剪",
+        "report_size": "报告数据",
+        "repeated_cycle": "重复执行周期",
+        "times": "次",
+        "steps": "步骤",
     },
 }
 
@@ -327,7 +339,10 @@ document.getElementById('crashTitle').textContent = `${crash.exception_type || '
 
 function eventsForMode(nextMode) {
   if (nextMode === 'slice' && sliceSteps.size) {
-    return allEvents.filter(event => sliceSteps.has(event.step));
+    return allEvents.filter(event => {
+      if (sliceSteps.has(event.step) || sliceSteps.has(event.step_end)) return true;
+      return (event.source_steps || []).some(step => sliceSteps.has(step));
+    });
   }
   return allEvents;
 }
@@ -340,7 +355,12 @@ function nearestIndex(step) {
   let bestIndex = 0;
   let bestDistance = Number.POSITIVE_INFINITY;
   events.forEach((event, index) => {
-    const distance = Math.abs(Number(event.step) - Number(step));
+    const start = Number(event.step);
+    const end = Number(event.step_end ?? event.step);
+    const target = Number(step);
+    const distance = target >= start && target <= end
+      ? 0
+      : Math.min(Math.abs(start - target), Math.abs(end - target));
     if (distance < bestDistance) {
       bestDistance = distance;
       bestIndex = index;
@@ -355,7 +375,16 @@ function updateViewControls() {
   const label = mode === 'slice' ? tr('crash_slice') : tr('all_events');
   document.getElementById('eventCount').textContent = `${label} · ${events.length} ${tr('of')} ${allEvents.length} ${tr('events')}`;
   const seconds = Number(traceStats.duration_seconds || 0).toFixed(3);
-  document.getElementById('traceStats').textContent = `${traceStats.retained_events ?? allEvents.length} ${tr('retained')} · ${traceStats.discarded_events ?? 0} ${tr('discarded')} · ${traceStats.traced_files ?? 0} ${tr('files')} · ${seconds}s ${tr('trace_time')}`;
+  const sizeMb = (Number(traceStats.report_size_bytes || 0) / 1024 / 1024).toFixed(2);
+  const details = [
+    `${traceStats.retained_events ?? allEvents.length} ${tr('retained')}`,
+    `${traceStats.discarded_events ?? 0} ${tr('discarded')}`,
+    `${traceStats.compressed_events ?? 0} ${tr('compressed')}`,
+    `${traceStats.report_trimmed_events ?? 0} ${tr('trimmed')}`,
+    `${sizeMb} MB ${tr('report_size')}`,
+    `${seconds}s ${tr('trace_time')}`,
+  ];
+  document.getElementById('traceStats').textContent = details.join(' · ');
 }
 function setView(nextMode, preferredStep = null) {
   const currentEvent = events[Number(slider.value)] || events[events.length - 1];
@@ -430,13 +459,19 @@ function render(index) {
   renderCode(event);
   renderChanges(event);
   document.getElementById('locals').textContent = pretty(event.locals || {});
+  const repeatBadge = event.event === 'repeat'
+    ? `<span class="badge">${escapeHtml(tr('repeated_cycle'))} · ${escapeHtml(event.repeat_count)} ${escapeHtml(tr('times'))}</span>`
+    : `<span class="badge">${escapeHtml(event.event)}</span>`;
   document.getElementById('eventMeta').innerHTML = [
-    `<span class="badge">${escapeHtml(event.event)}</span>`,
+    repeatBadge,
     `<span class="badge">${escapeHtml(event.function)}</span>`,
     event.exception_type ? `<div class="crash">${escapeHtml(event.exception_type)}: ${escapeHtml(event.exception_message || '')}</div>` : ''
   ].join('');
   const viewLabel = mode === 'slice' ? tr('crash_slice') : tr('all_events');
-  document.getElementById('stepLabel').textContent = `${tr('step')} ${event.step} · ${safeIndex + 1}/${events.length} · ${viewLabel}`;
+  const stepRange = event.step_end && event.step_end !== event.step
+    ? `${event.step}–${event.step_end}`
+    : `${event.step}`;
+  document.getElementById('stepLabel').textContent = `${tr('step')} ${stepRange} · ${safeIndex + 1}/${events.length} · ${viewLabel}`;
   const changeLocation = event.change_line && Object.keys(event.changes || {}).length
     ? ` · ${tr('changes_caused')} ${event.change_line}`
     : '';

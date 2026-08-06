@@ -80,6 +80,12 @@ def build_parser(language: str = "en") -> argparse.ArgumentParser:
         help=text(language, "exclude_help"),
     )
     run.add_argument(
+        "--max-report-mb",
+        type=float,
+        default=20.0,
+        help=text(language, "max_report_mb_help"),
+    )
+    run.add_argument(
         "--open",
         action="store_true",
         dest="open_report",
@@ -189,6 +195,7 @@ def main(argv: list[str] | None = None) -> int:
                 language=language,
                 include_paths=args.include,
                 exclude_paths=args.exclude,
+                max_report_mb=max(0.25, args.max_report_mb),
             )
         except FileNotFoundError:
             parser.error(text(language, "target_not_found", path=args.target))

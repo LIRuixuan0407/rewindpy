@@ -115,3 +115,11 @@ rewindpy run --max-events 5000 --include src --exclude tests app.py
 ```
 
 RewindPy keeps the newest events in a bounded ring buffer, preserves the crash tail, skips common environment/build directories by default, and shows retained/discarded event statistics in the report. Both `--include` and `--exclude` may be repeated.
+
+### Safe Tracing: report-size protection
+
+```bash
+rewindpy run --max-events 5000 --max-report-mb 10 app.py
+```
+
+RewindPy compresses repeated loops and prioritizes crash slices, exception events, and value origins when a report exceeds its budget.

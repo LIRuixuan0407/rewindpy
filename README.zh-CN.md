@@ -112,3 +112,11 @@ rewindpy run --max-events 5000 --include src --exclude tests app.py
 ```
 
 RewindPy 使用有界环形缓冲区保留最新事件，确保崩溃前的执行尾部不会丢失；默认跳过常见虚拟环境与构建目录，并在报告中展示保留与丢弃事件统计。`--include` 和 `--exclude` 均可重复使用。
+
+### Safe Tracing：报告体积保护
+
+```bash
+rewindpy run --max-events 5000 --max-report-mb 10 app.py
+```
+
+RewindPy 会压缩重复循环，并在报告超过预算时优先保留崩溃切片、异常事件和数值来源。
