@@ -57,6 +57,12 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(analysis["likely_replacement"], "userid")
             self.assertEqual(analysis["line"], 3)
 
+            crash_slice = payload["crash_slice"]
+            self.assertIn(analysis["origin_step"], crash_slice["steps"])
+            self.assertLessEqual(
+                crash_slice["shown_events"], crash_slice["total_events"]
+            )
+
 
     def test_success_does_not_create_report(self):
         with tempfile.TemporaryDirectory() as tmp:

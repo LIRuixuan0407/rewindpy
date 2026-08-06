@@ -123,3 +123,152 @@ def _build_summary(
     if likely_replacement:
         summary += f" It may have been renamed to {likely_replacement!r}."
     return summary
+
+
+def build_crash_slice(
+    events: list[dict[str, Any]],
+    crash: dict[str, Any],
+    analysis: dict[str, Any] | None = None,
+    *,
+    context_steps: int = 30,
+) -> dict[str, Any]:
+    """Select a compact set of events that tells the crash story.
+
+    The slice keeps:
+    - the final ``context_steps`` leading into the innermost crash event;
+    - call-site checkpoints for project frames in the traceback;
+    - every propagated exception event;
+    - the value-origin event (plus one neighboring event on each side).
+
+    Full execution history remains in the report and can be restored with the
+    "All Events" toggle. The slice stores step numbers instead of duplicating
+    event payloads.
+    """
+    if not events:
+        return {
+            "steps": [],
+            "total_events": 0,
+            "shown_events": 0,
+            "omitted_events": 0,
+            "context_steps": max(0, context_steps),
+        }
+
+    context_steps = max(1, context_steps)
+    anchor_index = _find_crash_anchor(events, crash)
+    relevant_indices: set[int] = set(
+        range(max(0, anchor_index - context_steps + 1), anchor_index + 1)
+    )
+
+    # Keep exception propagation visible even when it occurs after the
+    # innermost crash event selected as the anchor.
+    relevant_indices.update(
+        index for index, event in enumerate(events) if event.get("event") == "exception"
+    )
+
+    # Add two lightweight checkpoints for every project frame in the traceback:
+    # the active call and the line represented by the traceback frame.
+    for frame in crash.get("traceback") or []:
+        if not frame.get("project_file", True):
+            continue
+        signature = (frame.get("file"), frame.get("function"))
+        checkpoint = _find_frame_checkpoint(
+            events,
+            signature=signature,
+            line=frame.get("line"),
+            before_or_at=anchor_index,
+        )
+        if checkpoint is None:
+            continue
+        relevant_indices.add(checkpoint)
+        call_index = _find_active_call(
+            events,
+            signature=signature,
+            before_or_at=checkpoint,
+        )
+        if call_index is not None:
+            relevant_indices.add(call_index)
+
+    origin_step = (analysis or {}).get("origin_step")
+    if origin_step is not None:
+        origin_index = next(
+            (
+                index
+                for index, event in enumerate(events)
+                if event.get("step") == origin_step
+            ),
+            None,
+        )
+        if origin_index is not None:
+            relevant_indices.update(
+                range(max(0, origin_index - 1), min(len(events), origin_index + 2))
+            )
+
+    ordered_indices = sorted(relevant_indices)
+    steps = [int(events[index].get("step", index + 1)) for index in ordered_indices]
+    return {
+        "steps": steps,
+        "total_events": len(events),
+        "shown_events": len(steps),
+        "omitted_events": len(events) - len(steps),
+        "context_steps": context_steps,
+        "anchor_step": int(events[anchor_index].get("step", anchor_index + 1)),
+    }
+
+
+def _find_crash_anchor(
+    events: list[dict[str, Any]], crash: dict[str, Any]
+) -> int:
+    expected_file = crash.get("file")
+    expected_function = crash.get("function")
+    expected_type = crash.get("exception_type")
+
+    for index in range(len(events) - 1, -1, -1):
+        event = events[index]
+        if event.get("event") != "exception":
+            continue
+        if expected_file and event.get("file") != expected_file:
+            continue
+        if expected_function and event.get("function") != expected_function:
+            continue
+        if expected_type and event.get("exception_type") != expected_type:
+            continue
+        return index
+
+    for index in range(len(events) - 1, -1, -1):
+        if events[index].get("event") == "exception":
+            return index
+    return len(events) - 1
+
+
+def _find_frame_checkpoint(
+    events: list[dict[str, Any]],
+    *,
+    signature: tuple[Any, Any],
+    line: Any,
+    before_or_at: int,
+) -> int | None:
+    fallback: int | None = None
+    for index in range(before_or_at, -1, -1):
+        event = events[index]
+        if (event.get("file"), event.get("function")) != signature:
+            continue
+        if fallback is None:
+            fallback = index
+        if line is not None and event.get("line") == line:
+            return index
+    return fallback
+
+
+def _find_active_call(
+    events: list[dict[str, Any]],
+    *,
+    signature: tuple[Any, Any],
+    before_or_at: int,
+) -> int | None:
+    for index in range(before_or_at, -1, -1):
+        event = events[index]
+        if (event.get("file"), event.get("function")) != signature:
+            continue
+        if event.get("event") == "call":
+            return index
+    return None
