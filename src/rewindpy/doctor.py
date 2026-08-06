@@ -10,6 +10,7 @@ from pathlib import Path
 from . import __version__
 from .demos import create_demo_report
 from .i18n import text
+from .schema import REPORT_SCHEMA_VERSION, verify_report_integrity
 
 _MINIMUM_PYTHON = (3, 10)
 
@@ -57,9 +58,18 @@ def _demo_smoke_test() -> bool:
                 language="en",
             )
             html = report.read_text(encoding="utf-8")
+            start = html.index('<script id="rewind-data" type="application/json">')
+            start = html.index(">", start) + 1
+            end = html.index("</script>", start)
+            payload = json.loads(html[start:end])
+            verify_report_integrity(payload)
     except (OSError, RuntimeError, ValueError):
         return False
-    return 'id="sliceView"' in html and '"kind": "none-value-origin"' in html
+    return (
+        'id="sliceView"' in html
+        and payload["schema_version"] == REPORT_SCHEMA_VERSION
+        and payload["analysis"]["kind"] == "none-value-origin"
+    )
 
 
 def run_doctor() -> DoctorResult:

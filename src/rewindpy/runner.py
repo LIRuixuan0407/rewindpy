@@ -82,7 +82,6 @@ def _write(
     stats["report_events"] = len(report_events)
     stats["compressed_events"] = compressed_events
     payload = {
-        "version": 6,
         "language": language,
         "project_root": str(tracer.project_root),
         "target": str(target),
