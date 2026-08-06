@@ -143,11 +143,11 @@ class RewindPyPytestPlugin:
                 )
             )
         for nodeid, path in self.reports:
-            terminalreporter.write_line(f"  {nodeid} -> {self._relative(path)}")
+            terminalreporter.write_line(f"  {nodeid} -> {self._relative(path).as_posix()}")
 
     def _display_line(self, english: str, chinese: str, path: Path) -> str:
         label = chinese if self.language == "zh" else english
-        return f"{label}: {self._relative(path)}"
+        return f"{label}: {self._relative(path).as_posix()}"
 
     def _relative(self, path: Path) -> Path:
         try:
