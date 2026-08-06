@@ -7,3 +7,5 @@ dist/
 build/
 report.html
 .DS_Store
+*.patch
+*.diff
