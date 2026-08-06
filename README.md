@@ -50,7 +50,7 @@ rewindpy run --output crash.html app.py -- --port 8080
 
 A crashing target keeps its original non-zero exit code, which makes RewindPy suitable for local scripts and CI reproductions.
 
-## What v0.1.0 can do
+## What v0.1.1 can do
 
 - Rewind `call`, `line`, `return`, and `exception` events.
 - Inspect source, locals, and per-step value changes.
@@ -60,53 +60,6 @@ A crashing target keeps its original non-zero exit code, which makes RewindPy su
 - Trace a `NoneType` crash back to an assignment or function returning `None`.
 - Jump directly from the crash to the likely value origin.
 - Keep reports local and redact common secret names.
-
-## Built-in demos
-
-```bash
-rewindpy demo none-origin --open
-rewindpy demo key-error --open
-rewindpy demo crash-slice --open
-```
-
-## Command reference
-
-```text
-rewindpy --version
-rewindpy --lang zh --help
-rewindpy doctor [--json]
-rewindpy [--lang auto|en|zh] demo [none-origin|key-error|crash-slice] [--output FILE] [--open]
-rewindpy [--lang auto|en|zh] run SCRIPT [--output FILE] [--max-events N] [--open] [-- ARGS...]
-```
-
-The CLI auto-detects Chinese locales. You can also set `REWINDPY_LANG=zh` or use `--lang zh`. Generated reports include an `EN / 中文` switch.
-
-## Current scope
-
-RewindPy v0.1.0 targets Python 3.10+, single-threaded local scripts, uncaught exceptions, and files under the target script's directory.
-
-It is not deterministic replay. It does not yet model async task causality, multiprocessing, native extensions, live breakpoints, or arbitrary mutation inside opaque objects.
-
-## Safety
-
-Crash reports can contain runtime data. RewindPy writes them locally and redacts variable or dictionary keys containing names such as `password`, `token`, `secret`, and `api_key`. Always review a report before sharing it.
-
-## Development
-
-```bash
-python -m pip install -e ".[dev]"
-python -m ruff check .
-python -m pytest -q
-rewindpy doctor
-python -m build
-python -m twine check dist/*
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) to contribute, [SECURITY.md](SECURITY.md) for private vulnerability reporting, [RELEASING.md](RELEASING.md) for the release process, and [CHANGELOG.md](CHANGELOG.md) for version history.
-
-## License
-
-MIT
 
 ## Safe tracing
 
@@ -134,3 +87,50 @@ pytest --rewind --rewind-dir reports --rewind-lang zh
 ```
 
 Passing tests do not create reports. Failed-test reports are written to `.rewindpy/` by default, while pytest keeps its original output and exit code.
+
+## Built-in demos
+
+```bash
+rewindpy demo none-origin --open
+rewindpy demo key-error --open
+rewindpy demo crash-slice --open
+```
+
+## Command reference
+
+```text
+rewindpy --version
+rewindpy --lang zh --help
+rewindpy doctor [--json]
+rewindpy [--lang auto|en|zh] demo [none-origin|key-error|crash-slice] [--output FILE] [--open]
+rewindpy [--lang auto|en|zh] run SCRIPT [--output FILE] [--max-events N] [--open] [-- ARGS...]
+```
+
+The CLI auto-detects Chinese locales. You can also set `REWINDPY_LANG=zh` or use `--lang zh`. Generated reports include an `EN / 中文` switch.
+
+## Current scope
+
+RewindPy v0.1.1 targets Python 3.10+, single-threaded local scripts, uncaught exceptions, and files under the target script's directory.
+
+It is not deterministic replay. It does not yet model async task causality, multiprocessing, native extensions, live breakpoints, or arbitrary mutation inside opaque objects.
+
+## Safety
+
+Crash reports can contain runtime data. RewindPy writes them locally and redacts variable or dictionary keys containing names such as `password`, `token`, `secret`, and `api_key`. Always review a report before sharing it.
+
+## Development
+
+```bash
+python -m pip install -e ".[dev]"
+python -m ruff check .
+python -m pytest -q
+rewindpy doctor
+python -m build
+python -m twine check dist/*
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to contribute, [SECURITY.md](SECURITY.md) for private vulnerability reporting, [RELEASING.md](RELEASING.md) for the release process, and [CHANGELOG.md](CHANGELOG.md) for version history.
+
+## License
+
+RewindPy is licensed under the [MIT License](LICENSE).
