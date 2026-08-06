@@ -84,6 +84,7 @@ def _write(
     payload = {
         "version": 6,
         "language": language,
+        "project_root": str(tracer.project_root),
         "target": str(target),
         "arguments": list(target_args),
         "crash": crash,

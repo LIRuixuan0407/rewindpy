@@ -40,6 +40,13 @@ _REPORT_MESSAGES: dict[str, dict[str, str]] = {
         "repeated_cycle": "Repeated cycle",
         "times": "times",
         "steps": "steps",
+        "open_source": "Open source",
+        "copy_diagnostics": "Copy diagnostics",
+        "copied": "Copied",
+        "copy_failed": "Copy failed",
+        "keyboard_help": "←/→ or J/K: navigate · O: open source · C: copy diagnostics",
+        "open_source_title": "Open current file in VS Code",
+        "copy_diagnostics_title": "Copy crash diagnostics",
     },
     "zh": {
         "report_title": "RewindPy 崩溃报告",
@@ -76,6 +83,13 @@ _REPORT_MESSAGES: dict[str, dict[str, str]] = {
         "repeated_cycle": "重复执行周期",
         "times": "次",
         "steps": "步骤",
+        "open_source": "打开源码",
+        "copy_diagnostics": "复制诊断",
+        "copied": "已复制",
+        "copy_failed": "复制失败",
+        "keyboard_help": "←/→ 或 J/K：切换步骤 · O：打开源码 · C：复制诊断",
+        "open_source_title": "在 VS Code 中打开当前文件",
+        "copy_diagnostics_title": "复制崩溃诊断信息",
     },
 }
 
@@ -159,7 +173,7 @@ h1 { margin: 0; font-size: 17px; line-height: 1.2; letter-spacing: -.02em; }
   border-radius: 11px;
   background: rgba(15, 20, 31, .86);
 }
-.view-button, .language-toggle, .nav-button, .origin button {
+.view-button, .language-toggle, .nav-button, .origin button, .tool-button {
   border: 0;
   color: var(--muted);
   cursor: pointer;
@@ -180,6 +194,10 @@ h1 { margin: 0; font-size: 17px; line-height: 1.2; letter-spacing: -.02em; }
   font-size: 12px; font-weight: 750; letter-spacing: .02em;
 }
 .language-toggle:hover, .nav-button:hover, .origin button:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-3); }
+.tool-button { height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: 11px; background: rgba(15, 20, 31, .86); color: var(--soft); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.tool-button:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-3); }
+.tool-button.success { color: var(--success); border-color: rgba(134, 239, 172, .35); }
+.keyboard-help { margin-top: 8px; color: #64748b; font: 10px ui-monospace, SFMono-Regular, Consolas, monospace; text-align: center; }
 .badge {
   display: inline-flex; align-items: center; height: 28px;
   border: 1px solid var(--border);
@@ -263,7 +281,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); cursor: ew-resize;
   .timeline { grid-template-columns: 34px minmax(90px,1fr) 34px; }
   #stepLabel { grid-column: 1 / -1; width: auto; text-align: center; }
   #location { padding-left: 0; text-align: center; }
-  #eventCount, #traceStats { display: none; }
+  #eventCount, #traceStats, .tool-button { display: none; }
 }
 </style>
 </head>
@@ -278,6 +296,8 @@ input[type=range] { width: 100%; accent-color: var(--accent); cursor: ew-resize;
       <button class="view-button" id="sliceView">Crash Slice</button>
       <button class="view-button" id="allView">All Events</button>
     </div>
+    <button class="tool-button" id="openSource">Open source</button>
+    <button class="tool-button" id="copyDiagnostics">Copy diagnostics</button>
     <button class="language-toggle" id="languageToggle" aria-label="Switch language">中文</button>
     <span class="badge" id="localReport">local report</span>
     <span class="badge" id="eventCount"></span>
@@ -308,6 +328,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); cursor: ew-resize;
     <div id="stepLabel"></div>
   </div>
   <div id="location"></div>
+  <div class="keyboard-help" id="keyboardHelp"></div>
 </footer>
 <script id="rewind-data" type="application/json">__DATA__</script>
 <script>
@@ -331,6 +352,9 @@ const sliceButton = document.getElementById('sliceView');
 const allButton = document.getElementById('allView');
 const languageToggle = document.getElementById('languageToggle');
 const codePanel = document.getElementById('codePanel');
+const openSourceButton = document.getElementById('openSource');
+const copyDiagnosticsButton = document.getElementById('copyDiagnostics');
+let currentEvent = null;
 let mode = sliceSteps.size ? 'slice' : 'all';
 let events = eventsForMode(mode);
 
@@ -455,6 +479,7 @@ function render(index) {
   const safeIndex = Math.max(0, Math.min(index, events.length - 1));
   slider.value = safeIndex;
   const event = events[safeIndex];
+  currentEvent = event;
   renderCode(event);
   renderChanges(event);
   document.getElementById('locals').textContent = pretty(event.locals || {});
@@ -478,6 +503,43 @@ function render(index) {
   document.getElementById('prev').disabled = safeIndex === 0;
   document.getElementById('next').disabled = safeIndex === events.length - 1;
 }
+function sourceUri(event) {
+  if (!event?.file) return null;
+  const rawPath = String(event.file);
+  const root = String(data.project_root || '');
+  const absolutePath = /^(?:[A-Za-z]:[\\/]|\/)/.test(rawPath)
+    ? rawPath
+    : `${root.replace(/[\\/]$/, '')}/${rawPath}`;
+  const normalized = absolutePath.replace(/\\/g, '/');
+  const encodedPath = normalized.split('/').map(encodeURIComponent).join('/');
+  return `vscode://file/${encodedPath}:${Number(event.line || 1)}`;
+}
+function openCurrentSource() {
+  const uri = sourceUri(currentEvent);
+  if (uri) window.location.href = uri;
+}
+function diagnosticsText() {
+  const location = currentEvent
+    ? `${currentEvent.file}:${currentEvent.line} in ${currentEvent.function}()`
+    : '';
+  const origin = analysis ? `\n${localized(analysis, 'title')}: ${localized(analysis, 'summary')}` : '';
+  return `RewindPy\n${crash.exception_type || 'Exception'}: ${crash.message || ''}\n${location}${origin}`;
+}
+async function copyDiagnostics() {
+  try {
+    await navigator.clipboard.writeText(diagnosticsText());
+    copyDiagnosticsButton.textContent = tr('copied');
+    copyDiagnosticsButton.classList.add('success');
+  } catch (_error) {
+    copyDiagnosticsButton.textContent = tr('copy_failed');
+  }
+  window.setTimeout(() => {
+    copyDiagnosticsButton.textContent = tr('copy_diagnostics');
+    copyDiagnosticsButton.classList.remove('success');
+  }, 1400);
+}
+openSourceButton.onclick = openCurrentSource;
+copyDiagnosticsButton.onclick = copyDiagnostics;
 slider.addEventListener('input', () => render(Number(slider.value)));
 document.getElementById('prev').onclick = () => render(Number(slider.value) - 1);
 document.getElementById('next').onclick = () => render(Number(slider.value) + 1);
@@ -495,6 +557,11 @@ function applyLanguage(nextLanguage) {
   document.getElementById('likelyOriginTitle').textContent = tr('likely_origin');
   document.getElementById('variableChangesTitle').textContent = tr('variable_changes');
   document.getElementById('localsSnapshotTitle').textContent = tr('locals_snapshot');
+  openSourceButton.textContent = tr('open_source');
+  openSourceButton.title = tr('open_source_title');
+  copyDiagnosticsButton.textContent = tr('copy_diagnostics');
+  copyDiagnosticsButton.title = tr('copy_diagnostics_title');
+  document.getElementById('keyboardHelp').textContent = tr('keyboard_help');
   languageToggle.textContent = language === 'en' ? '中文' : 'EN';
   languageToggle.setAttribute('aria-label', language === 'en' ? '切换到中文' : 'Switch to English');
   renderOrigin();
@@ -503,8 +570,11 @@ function applyLanguage(nextLanguage) {
 }
 languageToggle.onclick = () => applyLanguage(language === 'en' ? 'zh' : 'en');
 document.addEventListener('keydown', event => {
-  if (event.key === 'ArrowLeft') document.getElementById('prev').click();
-  if (event.key === 'ArrowRight') document.getElementById('next').click();
+  const key = event.key.toLowerCase();
+  if (event.key === 'ArrowLeft' || key === 'j') document.getElementById('prev').click();
+  if (event.key === 'ArrowRight' || key === 'k') document.getElementById('next').click();
+  if (key === 'o') openCurrentSource();
+  if (key === 'c') copyDiagnostics();
 });
 applyLanguage(language);
 setView(mode, allEvents[allEvents.length - 1]?.step);
