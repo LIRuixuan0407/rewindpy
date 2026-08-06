@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from .analysis import analyze_crash
+from .analysis import analyze_crash, build_crash_slice
 from .report import write_report
 from .tracer import RewindTracer, build_crash_info
 
@@ -60,12 +60,14 @@ def _write(
     target_args: Sequence[str],
 ) -> None:
     events = tracer.event_dicts()
+    analysis = analyze_crash(events, crash)
     payload = {
-        "version": 2,
+        "version": 3,
         "target": str(target),
         "arguments": list(target_args),
         "crash": crash,
-        "analysis": analyze_crash(events, crash),
+        "analysis": analysis,
+        "crash_slice": build_crash_slice(events, crash, analysis),
         "events": events,
         "sources": tracer.source_files(),
     }
