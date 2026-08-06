@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 _REPORT_MESSAGES: dict[str, dict[str, str]] = {
     "en": {
         "report_title": "RewindPy crash report",

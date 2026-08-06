@@ -7,7 +7,6 @@ from typing import Any
 
 from .i18n import text
 
-
 _NONE_ATTRIBUTE_PATTERN = re.compile(
     r"'NoneType' object has no attribute '([^']+)'"
 )
@@ -148,7 +147,6 @@ def _analyze_none_attribute_error(
         reason = "returned-none"
         producer_function = origin_event.get("function")
     elif assignment is not None:
-        origin_index = assignment_index
         origin_event = assignment_event
         reason = "assigned-none"
         producer_function = None

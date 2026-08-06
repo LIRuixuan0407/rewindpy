@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import runpy
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from .analysis import analyze_crash, build_crash_slice
 from .optimize import compress_repeated_cycles, fit_report_budget

@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import linecache
-import os
 import sys
-import traceback as traceback_module
 import time
+import traceback as traceback_module
 from collections import deque
+from collections.abc import Callable
 from pathlib import Path
 from types import FrameType, TracebackType
-from typing import Any, Callable
+from typing import Any
 
 from .model import CrashInfo, TraceEvent, TraceStats
 from .serialize import SafeSerializer
-
 
 TraceFunction = Callable[[FrameType, str, Any], Any]
 
