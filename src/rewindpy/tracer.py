@@ -4,12 +4,13 @@ import linecache
 import os
 import sys
 import traceback as traceback_module
+import time
 from collections import deque
 from pathlib import Path
 from types import FrameType, TracebackType
 from typing import Any, Callable
 
-from .model import CrashInfo, TraceEvent
+from .model import CrashInfo, TraceEvent, TraceStats
 from .serialize import SafeSerializer
 
 
@@ -25,22 +26,37 @@ class RewindTracer:
         *,
         max_events: int = 5_000,
         serializer: SafeSerializer | None = None,
+        include_paths: list[Path] | None = None,
+        exclude_paths: list[Path] | None = None,
     ) -> None:
         self.project_root = project_root.resolve()
         self.max_events = max_events
         self.serializer = serializer or SafeSerializer()
+        self.include_paths = [path.resolve() for path in (include_paths or [])]
+        defaults = [".venv", "venv", "site-packages", "__pycache__", ".git", "build", "dist"]
+        self.exclude_paths = [self.project_root / item for item in defaults]
+        self.exclude_paths.extend(path.resolve() for path in (exclude_paths or []))
         self.events: deque[TraceEvent] = deque(maxlen=max_events)
         self._step = 0
         self._previous_locals: dict[int, dict[str, Any]] = {}
         self._previous_lines: dict[int, int] = {}
         self._enabled = False
+        self._total_events = 0
+        self._excluded_events = 0
+        self._traced_files: set[str] = set()
+        self._started_at = 0.0
+        self._duration_seconds = 0.0
 
     def start(self) -> None:
+        self._started_at = time.perf_counter()
         self._enabled = True
         sys.settrace(self._trace)
 
     def stop(self) -> None:
         sys.settrace(None)
+        if self._enabled and self._started_at:
+            self._duration_seconds += time.perf_counter() - self._started_at
+            self._started_at = 0.0
         self._enabled = False
 
     def _is_project_file(self, filename: str) -> bool:
@@ -49,6 +65,12 @@ class RewindTracer:
         try:
             path = Path(filename).resolve()
             path.relative_to(self.project_root)
+            if self.include_paths and not any(_is_relative_to(path, root) for root in self.include_paths):
+                self._excluded_events += 1
+                return False
+            if any(_is_relative_to(path, root) for root in self.exclude_paths):
+                self._excluded_events += 1
+                return False
             return True
         except (OSError, ValueError):
             return False
@@ -70,6 +92,7 @@ class RewindTracer:
 
     def _record(self, frame: FrameType, event: str, arg: Any) -> None:
         self._step += 1
+        self._total_events += 1
         locals_snapshot = self.serializer.serialize_locals(frame.f_locals)
         frame_key = id(frame)
         previous = self._previous_locals.get(frame_key, {})
@@ -92,6 +115,7 @@ class RewindTracer:
             exception_message = str(exc_value)
 
         file_path = str(Path(frame.f_code.co_filename).resolve().relative_to(self.project_root))
+        self._traced_files.add(file_path)
         self.events.append(
             TraceEvent(
                 step=self._step,
@@ -132,6 +156,19 @@ class RewindTracer:
             if old != new:
                 result[key] = {"before": old, "after": new}
         return result
+
+
+    def stats(self) -> TraceStats:
+        retained = len(self.events)
+        return TraceStats(
+            max_events=self.max_events,
+            total_events=self._total_events,
+            retained_events=retained,
+            discarded_events=max(0, self._total_events - retained),
+            traced_files=len(self._traced_files),
+            excluded_events=self._excluded_events,
+            duration_seconds=round(self._duration_seconds, 6),
+        )
 
     def event_dicts(self) -> list[dict[str, Any]]:
         return [event.to_dict() for event in self.events]
@@ -189,3 +226,11 @@ def build_crash_info(
         function=last_project_frame["function"] if last_project_frame else None,
         traceback=frames,
     )
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False

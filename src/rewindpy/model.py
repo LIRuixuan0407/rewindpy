@@ -34,3 +34,17 @@ class CrashInfo:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(slots=True)
+class TraceStats:
+    max_events: int
+    total_events: int
+    retained_events: int
+    discarded_events: int
+    traced_files: int
+    excluded_events: int
+    duration_seconds: float
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)

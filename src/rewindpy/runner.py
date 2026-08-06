@@ -17,13 +17,22 @@ def run_target(
     output: Path,
     max_events: int = 5_000,
     language: str = "en",
+    include_paths: Sequence[Path] = (),
+    exclude_paths: Sequence[Path] = (),
 ) -> int:
     target = target.resolve()
     if not target.is_file():
         raise FileNotFoundError(f"Target script not found: {target}")
 
     project_root = target.parent
-    tracer = RewindTracer(project_root, max_events=max_events)
+    resolved_includes = [path if path.is_absolute() else project_root / path for path in include_paths]
+    resolved_excludes = [path if path.is_absolute() else project_root / path for path in exclude_paths]
+    tracer = RewindTracer(
+        project_root,
+        max_events=max_events,
+        include_paths=resolved_includes,
+        exclude_paths=resolved_excludes,
+    )
     old_argv = sys.argv[:]
     old_path = sys.path[:]
     sys.argv = [str(target), *target_args]
@@ -72,6 +81,7 @@ def _write(
         "analysis": analysis,
         "crash_slice": build_crash_slice(events, crash, analysis),
         "events": events,
+        "trace_stats": tracer.stats().to_dict(),
         "sources": tracer.source_files(),
     }
     write_report(output, payload)

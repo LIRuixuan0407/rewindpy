@@ -12,6 +12,12 @@ All notable changes to RewindPy are documented here.
 
 ### Added
 
+- Safe tracing with a bounded ring buffer and discarded-event statistics.
+- Repeatable `--include` and `--exclude` path filters.
+- Trace statistics in bilingual crash reports.
+
+### Added
+
 - English and Simplified Chinese CLI, crash-report UI, and README documentation.
 - `--lang auto|en|zh` and `REWINDPY_LANG` language selection.
 - `rewindpy doctor` environment and end-to-end report diagnostics.

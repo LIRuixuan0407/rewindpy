@@ -31,6 +31,10 @@ _REPORT_MESSAGES: dict[str, dict[str, str]] = {
         "of": "of",
         "changes_caused": "changes caused by line",
         "probable_cause": "Probable cause found",
+        "retained": "retained",
+        "discarded": "discarded",
+        "files": "files",
+        "trace_time": "trace time",
     },
     "zh": {
         "report_title": "RewindPy 崩溃报告",
@@ -57,6 +61,10 @@ _REPORT_MESSAGES: dict[str, dict[str, str]] = {
         "of": "/",
         "changes_caused": "变量变化由代码行触发",
         "probable_cause": "已找到可能原因",
+        "retained": "已保留",
+        "discarded": "已丢弃",
+        "files": "个文件",
+        "trace_time": "追踪耗时",
     },
 }
 
@@ -244,7 +252,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); cursor: ew-resize;
   .timeline { grid-template-columns: 34px minmax(90px,1fr) 34px; }
   #stepLabel { grid-column: 1 / -1; width: auto; text-align: center; }
   #location { padding-left: 0; text-align: center; }
-  #eventCount { display: none; }
+  #eventCount, #traceStats { display: none; }
 }
 </style>
 </head>
@@ -262,6 +270,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); cursor: ew-resize;
     <button class="language-toggle" id="languageToggle" aria-label="Switch language">中文</button>
     <span class="badge" id="localReport">local report</span>
     <span class="badge" id="eventCount"></span>
+    <span class="badge" id="traceStats"></span>
   </div>
 </header>
 <main>
@@ -303,6 +312,7 @@ const allEvents = data.events || [];
 const sources = data.sources || {};
 const crash = data.crash || {};
 const analysis = data.analysis || null;
+const traceStats = data.trace_stats || {};
 const crashSlice = data.crash_slice || {};
 const sliceSteps = new Set(crashSlice.steps || []);
 const slider = document.getElementById('slider');
@@ -344,6 +354,8 @@ function updateViewControls() {
   sliceButton.disabled = !sliceSteps.size;
   const label = mode === 'slice' ? tr('crash_slice') : tr('all_events');
   document.getElementById('eventCount').textContent = `${label} · ${events.length} ${tr('of')} ${allEvents.length} ${tr('events')}`;
+  const seconds = Number(traceStats.duration_seconds || 0).toFixed(3);
+  document.getElementById('traceStats').textContent = `${traceStats.retained_events ?? allEvents.length} ${tr('retained')} · ${traceStats.discarded_events ?? 0} ${tr('discarded')} · ${traceStats.traced_files ?? 0} ${tr('files')} · ${seconds}s ${tr('trace_time')}`;
 }
 function setView(nextMode, preferredStep = null) {
   const currentEvent = events[Number(slider.value)] || events[events.length - 1];

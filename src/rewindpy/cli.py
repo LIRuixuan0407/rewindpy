@@ -66,6 +66,20 @@ def build_parser(language: str = "en") -> argparse.ArgumentParser:
         help=text(language, "max_events_help"),
     )
     run.add_argument(
+        "--include",
+        action="append",
+        type=Path,
+        default=[],
+        help=text(language, "include_help"),
+    )
+    run.add_argument(
+        "--exclude",
+        action="append",
+        type=Path,
+        default=[],
+        help=text(language, "exclude_help"),
+    )
+    run.add_argument(
         "--open",
         action="store_true",
         dest="open_report",
@@ -173,6 +187,8 @@ def main(argv: list[str] | None = None) -> int:
                 output=args.output,
                 max_events=max(10, args.max_events),
                 language=language,
+                include_paths=args.include,
+                exclude_paths=args.exclude,
             )
         except FileNotFoundError:
             parser.error(text(language, "target_not_found", path=args.target))
