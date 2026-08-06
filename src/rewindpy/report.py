@@ -29,6 +29,11 @@ main { display:grid; grid-template-columns: minmax(420px, 1.5fr) minmax(300px, 1
 .meta { padding:14px 16px; border-bottom:1px solid #26304c; font:13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .badge { display:inline-block; border:1px solid #3d4b70; border-radius:999px; padding:2px 8px; margin-right:6px; color:#bfd0ff; }
 pre { white-space:pre-wrap; word-break:break-word; }
+.origin { margin:14px 16px; padding:14px; border:1px solid #5b6f9f; border-radius:12px; background:#182440; }
+.origin-title { font-weight:800; margin-bottom:8px; color:#dce7ff; }
+.origin-summary { color:#bed0f7; line-height:1.55; margin-bottom:10px; }
+.origin-location { font:12px ui-monospace, SFMono-Regular, Consolas, monospace; color:#8fa2cf; margin-bottom:10px; }
+.origin-hint { color:#ffd99b; margin-top:8px; }
 .change { border-bottom:1px solid #26304c; padding:10px 16px; }
 .change-name { font-weight:700; margin-bottom:6px; }
 .before { color:#ffabab; }
@@ -56,6 +61,8 @@ button:hover { background:#26385f; }
   <section class="panel">
     <div class="panel-title">Execution state</div>
     <div class="meta" id="eventMeta"></div>
+    <div class="panel-title">Likely origin</div>
+    <div id="origin"></div>
     <div class="panel-title">Variable changes</div>
     <div id="changes"></div>
     <div class="panel-title">Locals snapshot</div>
@@ -77,6 +84,7 @@ const data = JSON.parse(document.getElementById('rewind-data').textContent);
 const events = data.events || [];
 const sources = data.sources || {};
 const crash = data.crash || {};
+const analysis = data.analysis || null;
 const slider = document.getElementById('slider');
 slider.max = Math.max(0, events.length - 1);
 slider.value = Math.max(0, events.length - 1);
@@ -95,6 +103,29 @@ function renderCode(event) {
   const active = document.querySelector('.code-line.active');
   if (active) active.scrollIntoView({block:'center'});
 }
+function renderOrigin() {
+  const container = document.getElementById('origin');
+  if (!analysis) {
+    container.innerHTML = '<div class="empty">No earlier value origin was identified for this crash.</div>';
+    return;
+  }
+  const replacement = analysis.likely_replacement
+    ? `<div class="origin-hint">Possible rename: <code>${escapeHtml(analysis.missing_key)}</code> → <code>${escapeHtml(analysis.likely_replacement)}</code></div>`
+    : '';
+  container.innerHTML = `
+    <div class="origin">
+      <div class="origin-title">Probable cause found</div>
+      <div class="origin-summary">${escapeHtml(analysis.summary)}</div>
+      <div class="origin-location">${escapeHtml(analysis.file)}:${escapeHtml(analysis.line)} in ${escapeHtml(analysis.function)}()</div>
+      <button id="jumpOrigin">Jump to step ${escapeHtml(analysis.origin_step)}</button>
+      ${replacement}
+    </div>`;
+  document.getElementById('jumpOrigin').onclick = () => {
+    const index = events.findIndex(event => event.step === analysis.origin_step);
+    if (index >= 0) { slider.value = index; render(index); }
+  };
+}
+
 function renderChanges(event) {
   const changes = event.changes || {};
   const container = document.getElementById('changes');
@@ -120,7 +151,10 @@ function render(index) {
     event.exception_type ? `<div class="crash">${escapeHtml(event.exception_type)}: ${escapeHtml(event.exception_message || '')}</div>` : ''
   ].join('');
   document.getElementById('stepLabel').textContent = `Step ${event.step} · ${index + 1}/${events.length}`;
-  document.getElementById('location').textContent = `${event.file}:${event.line} in ${event.function}()`;
+  const changeLocation = event.change_line && Object.keys(event.changes || {}).length
+    ? ` · changes caused by line ${event.change_line}`
+    : '';
+  document.getElementById('location').textContent = `${event.file}:${event.line} in ${event.function}()${changeLocation}`;
 }
 slider.addEventListener('input', () => render(Number(slider.value)));
 document.getElementById('prev').onclick = () => { slider.value = Math.max(0, Number(slider.value) - 1); render(Number(slider.value)); };
@@ -129,6 +163,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') document.getElementById('prev').click();
   if (e.key === 'ArrowRight') document.getElementById('next').click();
 });
+renderOrigin();
 render(Number(slider.value));
 </script>
 </body>

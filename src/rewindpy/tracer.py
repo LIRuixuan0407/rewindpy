@@ -32,6 +32,7 @@ class RewindTracer:
         self.events: deque[TraceEvent] = deque(maxlen=max_events)
         self._step = 0
         self._previous_locals: dict[int, dict[str, Any]] = {}
+        self._previous_lines: dict[int, int] = {}
         self._enabled = False
 
     def start(self) -> None:
@@ -73,7 +74,11 @@ class RewindTracer:
         frame_key = id(frame)
         previous = self._previous_locals.get(frame_key, {})
         changes = self._diff(previous, locals_snapshot)
+        change_line = self._previous_lines.get(frame_key)
         self._previous_locals[frame_key] = locals_snapshot
+
+        if event == "line":
+            self._previous_lines[frame_key] = frame.f_lineno
 
         exception_type: str | None = None
         exception_message: str | None = None
@@ -93,6 +98,7 @@ class RewindTracer:
                 depth=self._stack_depth(frame),
                 locals=locals_snapshot,
                 changes=changes,
+                change_line=change_line,
                 exception_type=exception_type,
                 exception_message=exception_message,
             )
@@ -100,6 +106,7 @@ class RewindTracer:
 
         if event == "return":
             self._previous_locals.pop(frame_key, None)
+            self._previous_lines.pop(frame_key, None)
 
     @staticmethod
     def _stack_depth(frame: FrameType) -> int:
