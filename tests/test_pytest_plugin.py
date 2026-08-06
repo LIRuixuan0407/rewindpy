@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _run_pytest(project: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
     environment = os.environ.copy()
+    environment["PYTHONUTF8"] = "1"
+    environment["PYTHONIOENCODING"] = "utf-8"
     source = str(ROOT / "src")
     environment["PYTHONPATH"] = source + os.pathsep + environment.get("PYTHONPATH", "")
     plugin_args: list[str] = []
@@ -26,6 +28,8 @@ def _run_pytest(project: Path, *arguments: str) -> subprocess.CompletedProcess[s
         env=environment,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
 
