@@ -4,6 +4,12 @@ All notable changes to RewindPy are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Redesigned the crash report with a fixed application shell and a product-focused visual system.
+- Fixed timeline dragging so only the source panel scrolls and the page no longer jumps vertically.
+- Replaced separate English and Chinese controls with one fixed-width language toggle.
+
 ### Added
 
 - English and Simplified Chinese CLI, crash-report UI, and README documentation.

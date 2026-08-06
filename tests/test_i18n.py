@@ -40,7 +40,7 @@ class InternationalizationTests(unittest.TestCase):
             self.assertIn("已追踪 None 来源", html)
             self.assertIn("None value traced", html)
             self.assertIn("崩溃切片", html)
-            self.assertIn('id="langZh"', html)
+            self.assertIn('id="languageToggle"', html)
 
     def test_chinese_doctor(self):
         output = io.StringIO()

@@ -68,73 +68,204 @@ HTML_TEMPLATE = r'''<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>RewindPy crash report</title>
 <style>
-:root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --header-h: 76px;
+  --footer-h: 104px;
+  --bg: #080b12;
+  --surface: #0f141f;
+  --surface-2: #151b28;
+  --surface-3: #1b2333;
+  --border: rgba(148, 163, 184, .16);
+  --border-strong: rgba(148, 163, 184, .28);
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --soft: #cbd5e1;
+  --accent: #7c8cff;
+  --accent-2: #5eead4;
+  --danger: #fb7185;
+  --success: #86efac;
+  --warning: #fbbf24;
+  --shadow: 0 18px 50px rgba(0, 0, 0, .28);
+}
 * { box-sizing: border-box; }
-body { margin: 0; background: #0b1020; color: #edf2ff; }
-header { padding: 18px 24px; border-bottom: 1px solid #26304c; display:flex; align-items:center; justify-content:space-between; gap:18px; }
-h1 { margin:0; font-size:20px; }
-.crash { color:#ff9b9b; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-.header-tools { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
-.language-switch { display:flex; gap:4px; margin-left:4px; }
-.language-button.active { background:#2c4170; color:#fff; }
-.view-switch { display:flex; gap:4px; padding:3px; border:1px solid #334262; border-radius:10px; background:#11182b; }
-.view-button { border:0; background:transparent; color:#9fb0d6; }
-.view-button.active { background:#2c4170; color:#fff; }
-main { display:grid; grid-template-columns: minmax(420px, 1.5fr) minmax(300px, 1fr); height: calc(100vh - 150px); }
-.panel { min-width:0; border-right:1px solid #26304c; overflow:auto; }
-.panel:last-child { border-right:0; }
-.panel-title { position:sticky; top:0; z-index:2; background:#11182b; padding:10px 16px; border-bottom:1px solid #26304c; font-size:13px; color:#aebce0; }
-#code { margin:0; padding:14px 0 40px; font:13px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; white-space:pre; }
-.code-line { display:block; padding:0 16px; min-height:22px; }
-.code-line::before { display:inline-block; width:48px; margin-right:14px; text-align:right; color:#607099; content:attr(data-line); }
-.code-line.active { background:#263a68; box-shadow: inset 3px 0 #75a7ff; }
-.meta { padding:14px 16px; border-bottom:1px solid #26304c; font:13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
-.badge { display:inline-block; border:1px solid #3d4b70; border-radius:999px; padding:2px 8px; margin-right:6px; color:#bfd0ff; }
-pre { white-space:pre-wrap; word-break:break-word; }
-.origin { margin:14px 16px; padding:14px; border:1px solid #5b6f9f; border-radius:12px; background:#182440; }
-.origin-title { font-weight:800; margin-bottom:8px; color:#dce7ff; }
-.origin-summary { color:#bed0f7; line-height:1.55; margin-bottom:10px; }
-.origin-location { font:12px ui-monospace, SFMono-Regular, Consolas, monospace; color:#8fa2cf; margin-bottom:10px; }
-.origin-hint { color:#ffd99b; margin-top:8px; }
-.change { border-bottom:1px solid #26304c; padding:10px 16px; }
-.change-name { font-weight:700; margin-bottom:6px; }
-.before { color:#ffabab; }
-.after { color:#a8efb7; }
-.empty { color:#7381a5; padding:16px; }
-footer { height:84px; border-top:1px solid #26304c; padding:12px 24px; background:#0e1528; }
-.timeline { display:flex; align-items:center; gap:14px; }
-input[type=range] { width:100%; }
-button { background:#1d2b4b; color:#edf2ff; border:1px solid #39496f; border-radius:8px; padding:6px 10px; cursor:pointer; }
-button:hover { background:#26385f; }
-button:disabled { cursor:not-allowed; opacity:.45; }
-#stepLabel { min-width:240px; text-align:center; font:12px ui-monospace, SFMono-Regular, Consolas, monospace; color:#b8c7ea; }
-#location { margin-top:8px; font:12px ui-monospace, SFMono-Regular, Consolas, monospace; color:#8fa2cf; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-@media (max-width: 850px) {
-  header { align-items:flex-start; flex-direction:column; }
-  main { grid-template-columns:1fr; height:auto; }
-  .panel { min-height:45vh; border-right:0; border-bottom:1px solid #26304c; }
-  #stepLabel { min-width:150px; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% -10%, rgba(124, 140, 255, .14), transparent 34%),
+    radial-gradient(circle at 88% 110%, rgba(94, 234, 212, .08), transparent 34%),
+    var(--bg);
+  color: var(--text);
+}
+button, input { font: inherit; }
+header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  height: var(--header-h);
+  padding: 0 22px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8, 11, 18, .88);
+  backdrop-filter: blur(18px);
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+}
+.brand { min-width: 0; display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 38px; height: 38px; flex: 0 0 auto;
+  display: grid; place-items: center;
+  border: 1px solid rgba(124, 140, 255, .36);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(124, 140, 255, .22), rgba(94, 234, 212, .08));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  font-size: 18px;
+}
+.brand-copy { min-width: 0; }
+h1 { margin: 0; font-size: 17px; line-height: 1.2; letter-spacing: -.02em; }
+.crash {
+  margin-top: 5px;
+  color: var(--danger);
+  font: 12px/1.3 ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.header-tools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.view-switch {
+  display: grid; grid-template-columns: 1fr 1fr;
+  width: 226px; height: 38px; padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(15, 20, 31, .86);
+}
+.view-button, .language-toggle, .nav-button, .origin button {
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+}
+.view-button { border-radius: 8px; background: transparent; font-size: 12px; font-weight: 650; }
+.view-button.active {
+  color: var(--text);
+  background: var(--surface-3);
+  box-shadow: 0 1px 0 rgba(255,255,255,.05), 0 5px 16px rgba(0,0,0,.2);
+}
+.language-toggle {
+  width: 78px; height: 38px; flex: 0 0 78px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(15, 20, 31, .86);
+  color: var(--soft);
+  font-size: 12px; font-weight: 750; letter-spacing: .02em;
+}
+.language-toggle:hover, .nav-button:hover, .origin button:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-3); }
+.badge {
+  display: inline-flex; align-items: center; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 9px;
+  color: var(--muted);
+  background: rgba(15, 20, 31, .72);
+  font-size: 11px; white-space: nowrap;
+}
+main {
+  position: fixed;
+  inset: var(--header-h) 0 var(--footer-h) 0;
+  display: grid;
+  grid-template-columns: minmax(420px, 1.45fr) minmax(340px, .9fr);
+  gap: 1px;
+  background: var(--border);
+  overflow: hidden;
+}
+.panel { min-width: 0; min-height: 0; overflow: auto; background: rgba(15, 20, 31, .9); overscroll-behavior: contain; scrollbar-gutter: stable; }
+.panel-title {
+  position: sticky; top: 0; z-index: 4;
+  min-height: 41px;
+  display: flex; align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(15, 20, 31, .94);
+  backdrop-filter: blur(12px);
+  color: var(--muted);
+  font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase;
+}
+#code { margin: 0; padding: 12px 0 48px; font: 13px/1.72 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; tab-size: 4; }
+.code-line { display: block; min-height: 23px; padding: 0 20px 0 8px; border-left: 3px solid transparent; }
+.code-line::before { display: inline-block; width: 50px; margin-right: 16px; text-align: right; color: #526076; content: attr(data-line); user-select: none; }
+.code-line.active {
+  border-left-color: var(--accent);
+  background: linear-gradient(90deg, rgba(124, 140, 255, .18), rgba(124, 140, 255, .035));
+  color: #fff;
+}
+.meta { padding: 14px 16px; border-bottom: 1px solid var(--border); font: 12px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace; }
+pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+.origin { margin: 14px 16px; padding: 15px; border: 1px solid rgba(124, 140, 255, .3); border-radius: 14px; background: linear-gradient(145deg, rgba(124,140,255,.12), rgba(21,27,40,.86)); box-shadow: var(--shadow); }
+.origin-title { margin-bottom: 8px; color: #eef2ff; font-size: 14px; font-weight: 800; }
+.origin-summary { margin-bottom: 11px; color: var(--soft); font-size: 13px; line-height: 1.58; }
+.origin-location { margin-bottom: 11px; color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; }
+.origin-hint { margin-top: 10px; color: #fde68a; font-size: 12px; }
+.origin button { min-height: 34px; padding: 0 11px; border: 1px solid rgba(124,140,255,.35); border-radius: 9px; background: rgba(124,140,255,.12); color: #dfe4ff; font-size: 12px; font-weight: 700; }
+.change { border-bottom: 1px solid var(--border); padding: 12px 16px; }
+.change-name { margin-bottom: 7px; font-size: 12px; font-weight: 800; color: var(--soft); }
+.before { color: #fda4af; }
+.after { color: var(--success); margin-top: 5px; }
+.empty { color: #64748b; padding: 16px; font-size: 12px; }
+footer {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 35;
+  height: var(--footer-h);
+  padding: 14px 22px 12px;
+  border-top: 1px solid var(--border);
+  background: rgba(8, 11, 18, .94);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 -16px 38px rgba(0, 0, 0, .24);
+}
+.timeline { display: grid; grid-template-columns: 36px minmax(120px, 1fr) 36px 250px; align-items: center; gap: 11px; }
+.nav-button {
+  width: 36px; height: 34px; padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--soft);
+}
+.nav-button:disabled { cursor: not-allowed; opacity: .35; }
+input[type=range] { width: 100%; accent-color: var(--accent); cursor: ew-resize; }
+#stepLabel { width: 250px; text-align: right; font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--soft); white-space: nowrap; }
+#location { margin-top: 10px; padding-left: 94px; color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 920px) {
+  :root { --header-h: 118px; --footer-h: 112px; }
+  header { grid-template-columns: 1fr; align-content: center; gap: 10px; }
+  .header-tools { justify-content: flex-start; }
+  main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  .view-switch { width: 210px; }
+  .timeline { grid-template-columns: 34px minmax(90px,1fr) 34px; }
+  #stepLabel { grid-column: 1 / -1; width: auto; text-align: center; }
+  #location { padding-left: 0; text-align: center; }
+  #eventCount { display: none; }
 }
 </style>
 </head>
 <body>
 <header>
-  <div><h1>⏪ RewindPy</h1><div class="crash" id="crashTitle"></div></div>
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">↶</div>
+    <div class="brand-copy"><h1>RewindPy</h1><div class="crash" id="crashTitle"></div></div>
+  </div>
   <div class="header-tools">
     <div class="view-switch" id="viewSwitch" aria-label="Timeline view">
       <button class="view-button" id="sliceView">Crash Slice</button>
       <button class="view-button" id="allView">All Events</button>
     </div>
-    <div class="language-switch" aria-label="Language / 语言">
-      <button class="language-button" id="langEn">EN</button>
-      <button class="language-button" id="langZh">中文</button>
-    </div>
+    <button class="language-toggle" id="languageToggle" aria-label="Switch language">中文</button>
     <span class="badge" id="localReport">local report</span>
     <span class="badge" id="eventCount"></span>
   </div>
 </header>
 <main>
-  <section class="panel">
+  <section class="panel" id="codePanel">
     <div class="panel-title" id="fileTitle">Source</div>
     <pre id="code"></pre>
   </section>
@@ -151,9 +282,9 @@ button:disabled { cursor:not-allowed; opacity:.45; }
 </main>
 <footer>
   <div class="timeline">
-    <button id="prev">◀</button>
+    <button class="nav-button" id="prev" aria-label="Previous step">◀</button>
     <input id="slider" type="range" min="0" value="0" />
-    <button id="next">▶</button>
+    <button class="nav-button" id="next" aria-label="Next step">▶</button>
     <div id="stepLabel"></div>
   </div>
   <div id="location"></div>
@@ -177,8 +308,8 @@ const sliceSteps = new Set(crashSlice.steps || []);
 const slider = document.getElementById('slider');
 const sliceButton = document.getElementById('sliceView');
 const allButton = document.getElementById('allView');
-const langEnButton = document.getElementById('langEn');
-const langZhButton = document.getElementById('langZh');
+const languageToggle = document.getElementById('languageToggle');
+const codePanel = document.getElementById('codePanel');
 let mode = sliceSteps.size ? 'slice' : 'all';
 let events = eventsForMode(mode);
 
@@ -230,7 +361,10 @@ function renderCode(event) {
   document.getElementById('code').innerHTML = html || `<span class="empty">${escapeHtml(tr('source_unavailable'))}</span>`;
   document.getElementById('fileTitle').textContent = event.file;
   const active = document.querySelector('.code-line.active');
-  if (active) active.scrollIntoView({block:'center'});
+  if (active && codePanel) {
+    const targetTop = active.offsetTop - (codePanel.clientHeight / 2) + (active.clientHeight / 2);
+    codePanel.scrollTo({top: Math.max(0, targetTop), behavior: 'auto'});
+  }
 }
 function renderOrigin() {
   const container = document.getElementById('origin');
@@ -315,14 +449,13 @@ function applyLanguage(nextLanguage) {
   document.getElementById('likelyOriginTitle').textContent = tr('likely_origin');
   document.getElementById('variableChangesTitle').textContent = tr('variable_changes');
   document.getElementById('localsSnapshotTitle').textContent = tr('locals_snapshot');
-  langEnButton.classList.toggle('active', language === 'en');
-  langZhButton.classList.toggle('active', language === 'zh');
+  languageToggle.textContent = language === 'en' ? '中文' : 'EN';
+  languageToggle.setAttribute('aria-label', language === 'en' ? '切换到中文' : 'Switch to English');
   renderOrigin();
   updateViewControls();
   render(Number(slider.value));
 }
-langEnButton.onclick = () => applyLanguage('en');
-langZhButton.onclick = () => applyLanguage('zh');
+languageToggle.onclick = () => applyLanguage(language === 'en' ? 'zh' : 'en');
 document.addEventListener('keydown', event => {
   if (event.key === 'ArrowLeft') document.getElementById('prev').click();
   if (event.key === 'ArrowRight') document.getElementById('next').click();
