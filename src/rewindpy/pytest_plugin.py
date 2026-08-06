@@ -10,7 +10,7 @@ import pytest
 
 from .i18n import normalize_language
 from .runner import _write
-from .tracer import RewindTracer, build_crash_info
+from .tracer import RewindTracer, build_crash_info, build_exception_chain
 
 _SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
 
@@ -82,6 +82,7 @@ class RewindPyPytestPlugin:
 
         exc_type, exc_value, traceback = outcome.excinfo
         crash = build_crash_info(exc_type, exc_value, traceback, self.root)
+        exception_chain = build_exception_chain(exc_value, self.root)
         report_path = self.output_dir / _report_filename(item.nodeid)
         report_path.parent.mkdir(parents=True, exist_ok=True)
         target = Path(str(getattr(item, "path", item.fspath))).resolve()
@@ -93,6 +94,7 @@ class RewindPyPytestPlugin:
             [item.nodeid],
             self.language,
             self.max_report_mb,
+            exception_chain=exception_chain,
         )
         self.reports.append((item.nodeid, report_path))
 

@@ -62,6 +62,10 @@ def prepare_report_payload(
     document["target"] = _string(source.get("target"))
     document["arguments"] = _string_list(source.get("arguments"), "$.arguments")
     document["crash"] = _normalize_crash(source.get("crash"))
+    document["exception_chain"] = _normalize_exception_chain(
+        source.get("exception_chain"),
+        document["crash"],
+    )
     document["analysis"] = _optional_object(source.get("analysis"), "$.analysis")
     document["crash_slice"] = _normalize_crash_slice(source.get("crash_slice"))
     document["events"] = _normalize_events(source.get("events"))
@@ -127,6 +131,7 @@ def validate_report_payload(payload: Mapping[str, Any]) -> None:
         raise ReportSchemaError("must be an object", path="$.crash")
     if not isinstance(payload.get("trace_stats"), dict):
         raise ReportSchemaError("must be an object", path="$.trace_stats")
+    _validate_exception_chain(payload.get("exception_chain"))
 
     for index, event in enumerate(payload["events"]):
         if not isinstance(event, dict):
@@ -204,6 +209,181 @@ def _normalize_crash(value: Any) -> dict[str, Any]:
         "function": _optional_string(crash.get("function")),
         "traceback": traceback_frames,
     }
+
+
+def _normalize_exception_chain(
+    value: Any,
+    crash: Mapping[str, Any],
+) -> dict[str, Any]:
+    if value is None:
+        raw_chain: Mapping[str, Any] = {}
+    elif isinstance(value, Mapping):
+        raw_chain = value
+    elif isinstance(value, Sequence) and not isinstance(
+        value,
+        (str, bytes, bytearray),
+    ):
+        raw_chain = {"items": value}
+    else:
+        raise ReportSchemaError("must be an object", path="$.exception_chain")
+
+    raw_items = raw_chain.get("items")
+    if raw_items is None:
+        raw_items = []
+    if not isinstance(raw_items, Sequence) or isinstance(
+        raw_items,
+        (str, bytes, bytearray),
+    ):
+        raise ReportSchemaError("must be an array", path="$.exception_chain.items")
+
+    items: list[dict[str, Any]] = []
+    for index, raw_item in enumerate(raw_items):
+        path = f"$.exception_chain.items[{index}]"
+        if not isinstance(raw_item, Mapping):
+            raise ReportSchemaError("must be an object", path=path)
+        item = dict(raw_item)
+        relation = item.get("relation_to_next")
+        if relation not in {None, "cause", "context"}:
+            raise ReportSchemaError(
+                "must be 'cause', 'context', or null",
+                path=f"{path}.relation_to_next",
+            )
+        raw_traceback = item.get("traceback")
+        if raw_traceback is None:
+            traceback_frames: list[dict[str, Any]] = []
+        elif isinstance(raw_traceback, Sequence) and not isinstance(
+            raw_traceback,
+            (str, bytes, bytearray),
+        ):
+            traceback_frames = []
+            for frame_index, frame in enumerate(raw_traceback):
+                if not isinstance(frame, Mapping):
+                    raise ReportSchemaError(
+                        "must be an object",
+                        path=f"{path}.traceback[{frame_index}]",
+                    )
+                traceback_frames.append(dict(frame))
+        else:
+            raise ReportSchemaError("must be an array", path=f"{path}.traceback")
+
+        items.append(
+            {
+                **item,
+                "index": index,
+                "exception_type": _string(
+                    item.get("exception_type"),
+                    "Exception",
+                ),
+                "exception_module": _string(
+                    item.get("exception_module"),
+                    "builtins",
+                ),
+                "message": _string(item.get("message")),
+                "relation_to_next": relation,
+                "suppress_context": bool(item.get("suppress_context", False)),
+                "file": _optional_string(item.get("file")),
+                "line": _optional_int(item.get("line"), f"{path}.line"),
+                "function": _optional_string(item.get("function")),
+                "traceback": traceback_frames,
+                "notes": _string_list(item.get("notes"), f"{path}.notes"),
+                "event_step": _optional_int(
+                    item.get("event_step"),
+                    f"{path}.event_step",
+                ),
+            }
+        )
+
+    if not items:
+        items.append(
+            {
+                "index": 0,
+                "exception_type": _string(
+                    crash.get("exception_type"),
+                    "Exception",
+                ),
+                "exception_module": "builtins",
+                "message": _string(crash.get("message")),
+                "relation_to_next": None,
+                "suppress_context": False,
+                "file": _optional_string(crash.get("file")),
+                "line": _optional_int(crash.get("line"), "$.crash.line"),
+                "function": _optional_string(crash.get("function")),
+                "traceback": list(crash.get("traceback") or []),
+                "notes": [],
+                "event_step": None,
+            }
+        )
+
+    items[-1]["relation_to_next"] = None
+    return {
+        "items": items,
+        "truncated": bool(raw_chain.get("truncated", False)),
+        "cycle_detected": bool(raw_chain.get("cycle_detected", False)),
+        "max_depth": _required_int(
+            raw_chain.get("max_depth", 16),
+            "$.exception_chain.max_depth",
+        ),
+    }
+
+
+def _validate_exception_chain(value: Any) -> None:
+    if not isinstance(value, dict):
+        raise ReportSchemaError("must be an object", path="$.exception_chain")
+    items = value.get("items")
+    if not isinstance(items, list) or not items:
+        raise ReportSchemaError(
+            "must be a non-empty array",
+            path="$.exception_chain.items",
+        )
+    if not isinstance(value.get("truncated"), bool):
+        raise ReportSchemaError("must be a boolean", path="$.exception_chain.truncated")
+    if not isinstance(value.get("cycle_detected"), bool):
+        raise ReportSchemaError(
+            "must be a boolean",
+            path="$.exception_chain.cycle_detected",
+        )
+    if not isinstance(value.get("max_depth"), int) or isinstance(
+        value.get("max_depth"),
+        bool,
+    ):
+        raise ReportSchemaError("must be an integer", path="$.exception_chain.max_depth")
+
+    for index, item in enumerate(items):
+        path = f"$.exception_chain.items[{index}]"
+        if not isinstance(item, dict):
+            raise ReportSchemaError("must be an object", path=path)
+        if not isinstance(item.get("index"), int) or isinstance(item.get("index"), bool):
+            raise ReportSchemaError("must be an integer", path=f"{path}.index")
+        for field in ("exception_type", "exception_module", "message"):
+            if not isinstance(item.get(field), str):
+                raise ReportSchemaError("must be a string", path=f"{path}.{field}")
+        if item.get("relation_to_next") not in {None, "cause", "context"}:
+            raise ReportSchemaError(
+                "must be 'cause', 'context', or null",
+                path=f"{path}.relation_to_next",
+            )
+        if not isinstance(item.get("suppress_context"), bool):
+            raise ReportSchemaError(
+                "must be a boolean",
+                path=f"{path}.suppress_context",
+            )
+        if not isinstance(item.get("traceback"), list):
+            raise ReportSchemaError("must be an array", path=f"{path}.traceback")
+        if not isinstance(item.get("notes"), list) or not all(
+            isinstance(note, str) for note in item.get("notes", [])
+        ):
+            raise ReportSchemaError(
+                "must be an array of strings",
+                path=f"{path}.notes",
+            )
+        event_step = item.get("event_step")
+        if event_step is not None and (
+            not isinstance(event_step, int) or isinstance(event_step, bool)
+        ):
+            raise ReportSchemaError(
+                "must be an integer or null",
+                path=f"{path}.event_step",
+            )
 
 
 def _normalize_crash_slice(value: Any) -> dict[str, Any]:

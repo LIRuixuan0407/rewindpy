@@ -29,6 +29,31 @@ print(render_profile(current_user))
 user = normalize_user({"user_id": "42", "name": "Alice"})
 print(user["user_id"])
 ''',
+    "exception-chain": '''import json
+
+
+class StartupError(RuntimeError):
+    pass
+
+
+def parse_config(raw):
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as exc:
+        if hasattr(exc, "add_note"):
+            exc.add_note("The built-in demo intentionally uses malformed JSON.")
+        raise ValueError("configuration is not valid JSON") from exc
+
+
+def start_application():
+    try:
+        return parse_config('{"port": 8000,}')
+    except ValueError as exc:
+        raise StartupError("application startup failed") from exc
+
+
+start_application()
+''',
     "crash-slice": '''def warm_up():
     total = 0
     for value in range(80):

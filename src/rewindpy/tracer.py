@@ -193,6 +193,134 @@ def build_crash_info(
     tb: TracebackType | None,
     project_root: Path,
 ) -> CrashInfo:
+    frames, last_project_frame = _traceback_frames(tb, project_root)
+    return CrashInfo(
+        exception_type=exc_type.__name__,
+        message=str(exc_value),
+        file=last_project_frame["file"] if last_project_frame else None,
+        line=last_project_frame["line"] if last_project_frame else None,
+        function=last_project_frame["function"] if last_project_frame else None,
+        traceback=frames,
+    )
+
+
+def build_exception_chain(
+    exc_value: BaseException,
+    project_root: Path,
+    *,
+    max_depth: int = 16,
+) -> dict[str, Any]:
+    """Return the visible Python exception chain from outermost to root cause.
+
+    Explicit ``raise ... from ...`` causes take precedence over implicit
+    ``__context__`` values, matching Python's traceback presentation rules.
+    Suppressed contexts are intentionally not exposed. Cycle and depth guards
+    keep hostile or manually mutated exception objects from hanging a report.
+    """
+    limit = max(1, int(max_depth))
+    items: list[dict[str, Any]] = []
+    seen: set[int] = set()
+    current: BaseException | None = exc_value
+    cycle_detected = False
+    truncated = False
+
+    while current is not None:
+        identity = id(current)
+        if identity in seen:
+            cycle_detected = True
+            break
+        if len(items) >= limit:
+            truncated = True
+            break
+        seen.add(identity)
+
+        relation, next_exception = _next_exception(current)
+        frames, last_project_frame = _traceback_frames(
+            current.__traceback__,
+            project_root,
+        )
+        exception_type = type(current)
+        raw_notes = getattr(current, "__notes__", ()) or ()
+        notes = [str(note) for note in raw_notes]
+        items.append(
+            {
+                "index": len(items),
+                "exception_type": exception_type.__name__,
+                "exception_module": exception_type.__module__,
+                "message": str(current),
+                "relation_to_next": relation,
+                "suppress_context": bool(current.__suppress_context__),
+                "file": last_project_frame["file"] if last_project_frame else None,
+                "line": last_project_frame["line"] if last_project_frame else None,
+                "function": (
+                    last_project_frame["function"] if last_project_frame else None
+                ),
+                "traceback": frames,
+                "notes": notes,
+                "event_step": None,
+            }
+        )
+        current = next_exception
+
+    return {
+        "items": items,
+        "truncated": truncated,
+        "cycle_detected": cycle_detected,
+        "max_depth": limit,
+    }
+
+
+def attach_exception_steps(
+    exception_chain: dict[str, Any],
+    events: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Attach the best matching trace event to each exception-chain item."""
+    items = exception_chain.get("items")
+    if not isinstance(items, list):
+        return exception_chain
+
+    used_steps: set[int] = set()
+    for item in reversed(items):
+        if not isinstance(item, dict):
+            continue
+        candidates = [
+            event
+            for event in events
+            if event.get("event") == "exception"
+            and event.get("exception_type") == item.get("exception_type")
+            and str(event.get("exception_message") or "") == str(item.get("message") or "")
+            and isinstance(event.get("step"), int)
+            and int(event["step"]) not in used_steps
+        ]
+        exact = [
+            event
+            for event in candidates
+            if event.get("file") == item.get("file")
+            and event.get("line") == item.get("line")
+            and event.get("function") == item.get("function")
+        ]
+        selected = (exact or candidates[:1])[:1]
+        if selected:
+            step = int(selected[0]["step"])
+            item["event_step"] = step
+            used_steps.add(step)
+    return exception_chain
+
+
+def _next_exception(
+    exception: BaseException,
+) -> tuple[str | None, BaseException | None]:
+    if exception.__cause__ is not None:
+        return "cause", exception.__cause__
+    if exception.__context__ is not None and not exception.__suppress_context__:
+        return "context", exception.__context__
+    return None, None
+
+
+def _traceback_frames(
+    tb: TracebackType | None,
+    project_root: Path,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     frames: list[dict[str, Any]] = []
     last_project_frame: dict[str, Any] | None = None
     root = project_root.resolve()
@@ -210,21 +338,15 @@ def build_crash_info(
             "file": relative,
             "line": frame_summary.lineno,
             "function": frame_summary.name,
-            "source": frame_summary.line or linecache.getline(str(filename), frame_summary.lineno).strip(),
+            "source": frame_summary.line
+            or linecache.getline(str(filename), frame_summary.lineno).strip(),
             "project_file": is_project,
         }
         frames.append(frame_data)
         if is_project:
             last_project_frame = frame_data
 
-    return CrashInfo(
-        exception_type=exc_type.__name__,
-        message=str(exc_value),
-        file=last_project_frame["file"] if last_project_frame else None,
-        line=last_project_frame["line"] if last_project_frame else None,
-        function=last_project_frame["function"] if last_project_frame else None,
-        traceback=frames,
-    )
+    return frames, last_project_frame
 
 
 def _is_relative_to(path: Path, root: Path) -> bool:

@@ -4,6 +4,10 @@ All notable changes to RewindPy are documented here.
 
 ## [Unreleased]
 
+### Added
+- Exception-chain capture for explicit causes, implicit contexts, pytest failures, and timeline navigation.
+
+
 ## [0.1.1] - 2026-08-06
 
 ### Added

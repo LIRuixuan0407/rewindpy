@@ -88,3 +88,31 @@ def test_plugin_generates_bilingual_report_index(tmp_path: Path) -> None:
     assert "RewindPy 测试失败报告" in content
     assert "test_bad" in content
     assert "报告索引: .rewindpy/index.html" in result.stdout
+
+
+def test_plugin_preserves_explicit_exception_chain(tmp_path: Path) -> None:
+    (tmp_path / "test_chain.py").write_text(
+        "class ServiceError(RuntimeError):\n"
+        "    pass\n\n"
+        "def test_chain():\n"
+        "    try:\n"
+        "        int('bad')\n"
+        "    except ValueError as exc:\n"
+        "        raise ServiceError('service failed') from exc\n",
+        encoding="utf-8",
+    )
+
+    result = _run_pytest(tmp_path, "--rewind", "-q")
+    reports = [
+        path
+        for path in (tmp_path / ".rewindpy").glob("*.html")
+        if path.name != "index.html"
+    ]
+
+    assert result.returncode == 1
+    assert len(reports) == 1
+    content = reports[0].read_text(encoding="utf-8")
+    assert '"exception_type": "ServiceError"' in content
+    assert '"exception_type": "ValueError"' in content
+    assert '"relation_to_next": "cause"' in content
+    assert 'id="exceptionsTab"' in content

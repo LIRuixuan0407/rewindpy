@@ -71,9 +71,62 @@ def test_prepares_schema_v2_and_normalizes_legacy_sources() -> None:
     assert document["integrity"]["status"] == "ok"
     assert document["integrity"]["event_count"] == 1
     assert document["integrity"]["source_count"] == 3
+    assert document["exception_chain"]["items"][0]["exception_type"] == "RuntimeError"
+    assert document["exception_chain"]["items"][0]["relation_to_next"] is None
     assert len(document["integrity"]["digest"]) == 64
     verify_report_integrity(document)
 
+
+
+def test_normalizes_and_validates_exception_chain() -> None:
+    payload = _payload()
+    payload["exception_chain"] = {
+        "items": [
+            {
+                "exception_type": "RuntimeError",
+                "message": "outer",
+                "relation_to_next": "cause",
+                "file": "app.py",
+                "line": 1,
+                "function": "main",
+                "traceback": [],
+                "notes": ["public note"],
+                "event_step": 2,
+            },
+            {
+                "exception_type": "ValueError",
+                "message": "inner",
+                "relation_to_next": None,
+                "traceback": [],
+            },
+        ],
+        "truncated": False,
+        "cycle_detected": False,
+        "max_depth": 16,
+    }
+
+    document = prepare_report_payload(payload)
+
+    assert [item["index"] for item in document["exception_chain"]["items"]] == [0, 1]
+    assert document["exception_chain"]["items"][0]["notes"] == ["public note"]
+    assert document["exception_chain"]["items"][0]["event_step"] == 2
+    verify_report_integrity(document)
+
+
+def test_rejects_invalid_exception_relation() -> None:
+    payload = _payload()
+    payload["exception_chain"] = {
+        "items": [
+            {
+                "exception_type": "RuntimeError",
+                "message": "outer",
+                "relation_to_next": "unknown",
+            }
+        ]
+    }
+
+    with pytest.raises(ReportSchemaError, match="relation_to_next"):
+        prepare_report_payload(payload)
 
 def test_integrity_verification_detects_tampering() -> None:
     document = prepare_report_payload(_payload())

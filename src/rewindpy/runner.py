@@ -9,7 +9,12 @@ from pathlib import Path
 from .analysis import analyze_crash, build_crash_slice
 from .optimize import compress_repeated_cycles, fit_report_budget
 from .report import write_report
-from .tracer import RewindTracer, build_crash_info
+from .tracer import (
+    RewindTracer,
+    attach_exception_steps,
+    build_crash_info,
+    build_exception_chain,
+)
 
 
 def run_target(
@@ -50,12 +55,32 @@ def run_target(
             return 0
         tracer.stop()
         crash = build_crash_info(type(exc), exc, exc.__traceback__, project_root)
-        _write(output, tracer, crash.to_dict(), target, target_args, language, max_report_mb)
+        exception_chain = build_exception_chain(exc, project_root)
+        _write(
+            output,
+            tracer,
+            crash.to_dict(),
+            target,
+            target_args,
+            language,
+            max_report_mb,
+            exception_chain=exception_chain,
+        )
         return int(code)
     except BaseException as exc:
         tracer.stop()
         crash = build_crash_info(type(exc), exc, exc.__traceback__, project_root)
-        _write(output, tracer, crash.to_dict(), target, target_args, language, max_report_mb)
+        exception_chain = build_exception_chain(exc, project_root)
+        _write(
+            output,
+            tracer,
+            crash.to_dict(),
+            target,
+            target_args,
+            language,
+            max_report_mb,
+            exception_chain=exception_chain,
+        )
         return 1
     finally:
         tracer.stop()
@@ -73,10 +98,19 @@ def _write(
     target_args: Sequence[str],
     language: str,
     max_report_mb: float,
+    *,
+    exception_chain: dict | None = None,
 ) -> None:
     events = tracer.event_dicts()
     analysis = analyze_crash(events, crash, language=language)
     crash_slice = build_crash_slice(events, crash, analysis)
+    chain = attach_exception_steps(exception_chain or {"items": []}, events)
+    chain_steps = {
+        int(item["event_step"])
+        for item in chain.get("items", [])
+        if isinstance(item, dict) and isinstance(item.get("event_step"), int)
+    }
+    crash_slice["steps"] = sorted(set(crash_slice.get("steps") or []) | chain_steps)
     report_events, compressed_events = compress_repeated_cycles(events)
     stats = tracer.stats().to_dict()
     stats["report_events"] = len(report_events)
@@ -87,13 +121,14 @@ def _write(
         "target": str(target),
         "arguments": list(target_args),
         "crash": crash,
+        "exception_chain": chain,
         "analysis": analysis,
         "crash_slice": crash_slice,
         "events": report_events,
         "trace_stats": stats,
         "sources": tracer.source_files(),
     }
-    protected_steps = set(crash_slice.get("steps") or [])
+    protected_steps = set(crash_slice.get("steps") or []) | chain_steps
     if analysis and analysis.get("origin_step") is not None:
         protected_steps.add(int(analysis["origin_step"]))
     payload, trimmed = fit_report_budget(
