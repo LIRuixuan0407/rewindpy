@@ -29,6 +29,8 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/LIRuixuan0407/rewindpy"
+Documentation = "https://liruixuan0407.github.io/rewindpy/"
+Live-Demo = "https://liruixuan0407.github.io/rewindpy/"
 Repository = "https://github.com/LIRuixuan0407/rewindpy"
 Issues = "https://github.com/LIRuixuan0407/rewindpy/issues"
 Changelog = "https://github.com/LIRuixuan0407/rewindpy/blob/main/CHANGELOG.md"

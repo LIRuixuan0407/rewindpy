@@ -29,17 +29,41 @@ jobs:
       - run: rewindpy --lang en doctor
 
   package-smoke:
-    runs-on: ubuntu-latest
+    name: Installed wheel smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
-      - run: python -m pip install --upgrade pip build twine
-      - run: python -m build
-      - run: python -m twine check dist/*
-      - run: python -m venv .package-smoke
-      - run: .package-smoke/bin/python -m pip install dist/*.whl
-      - run: .package-smoke/bin/rewindpy --version
-      - run: .package-smoke/bin/rewindpy --lang zh doctor
+      - name: Install build tools
+        run: python -m pip install --upgrade pip build twine
+      - name: Build distributions
+        run: python -m build
+      - name: Validate distributions
+        run: python -m twine check dist/*
+      - name: Install the built wheel
+        run: >-
+          python -c "from pathlib import Path; import subprocess, sys;
+          wheel = next(Path('dist').glob('*.whl'));
+          subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--no-deps', '--force-reinstall', str(wheel)])"
+      - name: Verify module and console entry points
+        run: |
+          python -m rewindpy --version
+          rewindpy --version
+      - name: Run installed doctor
+        run: rewindpy --lang zh doctor
+      - name: Generate an installed-package report
+        run: rewindpy --lang en demo none-origin --output smoke-report.html
+      - name: Validate generated report
+        run: >-
+          python -c "from pathlib import Path;
+          report = Path('smoke-report.html');
+          text = report.read_text(encoding='utf-8');
+          assert report.stat().st_size > 1000;
+          assert '<html' in text.lower() and 'RewindPy' in text"

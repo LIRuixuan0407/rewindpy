@@ -9,23 +9,23 @@
 一个本地运行的 Python 崩溃后时间旅行调试器。
 
 [![CI](https://github.com/LIRuixuan0407/rewindpy/actions/workflows/ci.yml/badge.svg)](https://github.com/LIRuixuan0407/rewindpy/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/rewindpy.svg)](https://pypi.org/project/rewindpy/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![在线演示](https://img.shields.io/badge/在线-演示-8A2BE2)](https://liruixuan0407.github.io/rewindpy/)
 
 </div>
 
 ![RewindPy 演示](docs/assets/rewindpy-demo.gif)
+
+**[打开在线交互报告](https://liruixuan0407.github.io/rewindpy/)**
 
 RewindPy 会记录有数量上限、仅限项目代码的执行事件。当出现未捕获异常时，它会生成一个自包含 HTML 报告，让你向前倒带查看源码行、局部变量和每一步的数值变化。
 
 ## 一分钟体验
 
 ```bash
-git clone https://github.com/LIRuixuan0407/rewindpy.git
-cd rewindpy
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-python -m pip install .
+python -m pip install --upgrade rewindpy
 rewindpy --lang zh doctor
 rewindpy --lang zh demo --open
 ```

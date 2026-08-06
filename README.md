@@ -9,23 +9,23 @@
 A local, post-crash time-travel debugger for Python.
 
 [![CI](https://github.com/LIRuixuan0407/rewindpy/actions/workflows/ci.yml/badge.svg)](https://github.com/LIRuixuan0407/rewindpy/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/rewindpy.svg)](https://pypi.org/project/rewindpy/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/live-demo-8A2BE2)](https://liruixuan0407.github.io/rewindpy/)
 
 </div>
 
 ![RewindPy demo](docs/assets/rewindpy-demo.gif)
+
+**[Open the live interactive report](https://liruixuan0407.github.io/rewindpy/)**
 
 RewindPy records a bounded history of project-local execution events. When an uncaught exception occurs, it writes a self-contained HTML report that lets you move backward through source lines, local values, and variable changes.
 
 ## Try it in one minute
 
 ```bash
-git clone https://github.com/LIRuixuan0407/rewindpy.git
-cd rewindpy
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-python -m pip install .
+python -m pip install --upgrade rewindpy
 rewindpy doctor
 rewindpy demo --open
 ```
