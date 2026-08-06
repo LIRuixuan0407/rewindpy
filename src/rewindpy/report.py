@@ -7,581 +7,198 @@ from typing import Any
 _REPORT_MESSAGES: dict[str, dict[str, str]] = {
     "en": {
         "report_title": "RewindPy crash report",
-        "timeline_view": "Timeline view",
         "crash_slice": "Crash Slice",
         "all_events": "All Events",
-        "local_report": "local report",
         "source": "Source",
-        "execution_state": "Execution state",
-        "likely_origin": "Likely origin",
-        "variable_changes": "Variable changes",
-        "locals_snapshot": "Locals snapshot",
-        "source_unavailable": "Source unavailable.",
-        "no_origin": "No earlier value origin was identified for this crash.",
-        "possible_rename": "Possible rename",
-        "produced_by": "Produced by",
-        "returning_none": "returning None",
-        "assigned_none": "was assigned None",
-        "jump_to_step": "Jump to step",
-        "no_changes": "No local variable changes on this step.",
-        "no_events": "No execution events were captured.",
-        "step": "Step",
-        "events": "events",
-        "of": "of",
-        "changes_caused": "changes caused by line",
-        "probable_cause": "Probable cause found",
-        "retained": "retained",
-        "discarded": "discarded",
-        "files": "files",
-        "trace_time": "trace time",
-        "compressed": "compressed",
-        "trimmed": "trimmed for report size",
-        "report_size": "report data",
-        "repeated_cycle": "Repeated cycle",
-        "times": "times",
-        "steps": "steps",
+        "variables": "Variables",
+        "call_stack": "Call stack",
+        "changes": "Changes",
+        "origin": "Likely origin",
+        "no_origin": "No earlier value origin was identified.",
+        "no_source": "Source unavailable",
+        "no_variables": "No local variables captured",
+        "no_changes": "No variable changes on this step",
+        "play": "Play",
+        "pause": "Pause",
+        "previous": "Previous",
+        "next": "Next",
         "open_source": "Open source",
-        "copy_diagnostics": "Copy diagnostics",
+        "copy_diagnostic": "Copy diagnostic",
+        "copy_location": "Copy location",
         "copied": "Copied",
         "copy_failed": "Copy failed",
-        "keyboard_help": "←/→ or J/K: navigate · O: open source · C: copy diagnostics",
-        "open_source_title": "Open current file in VS Code",
-        "copy_diagnostics_title": "Copy crash diagnostics",
+        "step": "Step",
+        "of": "of",
+        "events": "events",
+        "retained": "retained",
+        "discarded": "discarded",
+        "compressed": "compressed",
+        "trimmed": "trimmed",
+        "files": "files",
+        "trace_time": "trace time",
+        "report_size": "report data",
+        "repeat": "repeated",
+        "times": "times",
+        "jump_origin": "Jump to origin",
+        "theme": "Theme",
+        "speed": "Speed",
+        "shortcuts": "←/J previous · →/K next · Space play · O open · C copy · L location",
+        "timeline": "Execution timeline",
+        "current_event": "Current event",
+        "function": "Function",
+        "location": "Location",
+        "event": "Event",
+        "depth": "Depth",
     },
     "zh": {
         "report_title": "RewindPy 崩溃报告",
-        "timeline_view": "时间线视图",
         "crash_slice": "崩溃切片",
         "all_events": "全部事件",
-        "local_report": "本地报告",
         "source": "源代码",
-        "execution_state": "执行状态",
-        "likely_origin": "可能来源",
-        "variable_changes": "变量变化",
-        "locals_snapshot": "局部变量快照",
-        "source_unavailable": "无法获取源代码。",
-        "no_origin": "没有为这次崩溃找到可信的更早数值来源。",
-        "possible_rename": "可能的重命名",
-        "produced_by": "来源函数",
-        "returning_none": "返回了 None",
-        "assigned_none": "被赋值为 None",
-        "jump_to_step": "跳转到步骤",
-        "no_changes": "这一步没有局部变量变化。",
-        "no_events": "没有捕获到执行事件。",
-        "step": "步骤",
-        "events": "个事件",
-        "of": "/",
-        "changes_caused": "变量变化由代码行触发",
-        "probable_cause": "已找到可能原因",
-        "retained": "已保留",
-        "discarded": "已丢弃",
-        "files": "个文件",
-        "trace_time": "追踪耗时",
-        "compressed": "已压缩",
-        "trimmed": "因报告体积裁剪",
-        "report_size": "报告数据",
-        "repeated_cycle": "重复执行周期",
-        "times": "次",
-        "steps": "步骤",
+        "variables": "变量",
+        "call_stack": "调用栈",
+        "changes": "变量变化",
+        "origin": "可能来源",
+        "no_origin": "没有找到可信的更早数值来源。",
+        "no_source": "无法获取源代码",
+        "no_variables": "没有捕获到局部变量",
+        "no_changes": "这一步没有变量变化",
+        "play": "播放",
+        "pause": "暂停",
+        "previous": "上一步",
+        "next": "下一步",
         "open_source": "打开源码",
-        "copy_diagnostics": "复制诊断",
+        "copy_diagnostic": "复制诊断",
+        "copy_location": "复制位置",
         "copied": "已复制",
         "copy_failed": "复制失败",
-        "keyboard_help": "←/→ 或 J/K：切换步骤 · O：打开源码 · C：复制诊断",
-        "open_source_title": "在 VS Code 中打开当前文件",
-        "copy_diagnostics_title": "复制崩溃诊断信息",
+        "step": "步骤",
+        "of": "/",
+        "events": "个事件",
+        "retained": "已保留",
+        "discarded": "已丢弃",
+        "compressed": "已压缩",
+        "trimmed": "已裁剪",
+        "files": "个文件",
+        "trace_time": "追踪耗时",
+        "report_size": "报告数据",
+        "repeat": "重复",
+        "times": "次",
+        "jump_origin": "跳转到来源",
+        "theme": "主题",
+        "speed": "速度",
+        "shortcuts": "←/J 上一步 · →/K 下一步 · 空格播放 · O 打开 · C 复制 · L 位置",
+        "timeline": "执行时间线",
+        "current_event": "当前事件",
+        "function": "函数",
+        "location": "位置",
+        "event": "事件",
+        "depth": "深度",
     },
 }
 
-
 HTML_TEMPLATE = r'''<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RewindPy crash report</title>
+<title>RewindPy</title>
 <style>
-:root {
-  color-scheme: dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --header-h: 76px;
-  --footer-h: 104px;
-  --bg: #080b12;
-  --surface: #0f141f;
-  --surface-2: #151b28;
-  --surface-3: #1b2333;
-  --border: rgba(148, 163, 184, .16);
-  --border-strong: rgba(148, 163, 184, .28);
-  --text: #f8fafc;
-  --muted: #94a3b8;
-  --soft: #cbd5e1;
-  --accent: #7c8cff;
-  --accent-2: #5eead4;
-  --danger: #fb7185;
-  --success: #86efac;
-  --warning: #fbbf24;
-  --shadow: 0 18px 50px rgba(0, 0, 0, .28);
-}
-* { box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; }
-body {
-  margin: 0;
-  background:
-    radial-gradient(circle at 12% -10%, rgba(124, 140, 255, .14), transparent 34%),
-    radial-gradient(circle at 88% 110%, rgba(94, 234, 212, .08), transparent 34%),
-    var(--bg);
-  color: var(--text);
-}
-button, input { font: inherit; }
-header {
-  position: fixed;
-  inset: 0 0 auto 0;
-  z-index: 30;
-  height: var(--header-h);
-  padding: 0 22px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(8, 11, 18, .88);
-  backdrop-filter: blur(18px);
-  display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto;
-  align-items: center;
-  gap: 20px;
-}
-.brand { min-width: 0; display: flex; align-items: center; gap: 12px; }
-.brand-mark {
-  width: 38px; height: 38px; flex: 0 0 auto;
-  display: grid; place-items: center;
-  border: 1px solid rgba(124, 140, 255, .36);
-  border-radius: 12px;
-  background: linear-gradient(145deg, rgba(124, 140, 255, .22), rgba(94, 234, 212, .08));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-  font-size: 18px;
-}
-.brand-copy { min-width: 0; }
-h1 { margin: 0; font-size: 17px; line-height: 1.2; letter-spacing: -.02em; }
-.crash {
-  margin-top: 5px;
-  color: var(--danger);
-  font: 12px/1.3 ui-monospace, SFMono-Regular, Consolas, monospace;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.header-tools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.view-switch {
-  display: grid; grid-template-columns: 1fr 1fr;
-  width: 226px; height: 38px; padding: 3px;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  background: rgba(15, 20, 31, .86);
-}
-.view-button, .language-toggle, .nav-button, .origin button, .tool-button {
-  border: 0;
-  color: var(--muted);
-  cursor: pointer;
-  transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
-}
-.view-button { border-radius: 8px; background: transparent; font-size: 12px; font-weight: 650; }
-.view-button.active {
-  color: var(--text);
-  background: var(--surface-3);
-  box-shadow: 0 1px 0 rgba(255,255,255,.05), 0 5px 16px rgba(0,0,0,.2);
-}
-.language-toggle {
-  width: 78px; height: 38px; flex: 0 0 78px;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  background: rgba(15, 20, 31, .86);
-  color: var(--soft);
-  font-size: 12px; font-weight: 750; letter-spacing: .02em;
-}
-.language-toggle:hover, .nav-button:hover, .origin button:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-3); }
-.tool-button { height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: 11px; background: rgba(15, 20, 31, .86); color: var(--soft); font-size: 12px; font-weight: 700; white-space: nowrap; }
-.tool-button:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-3); }
-.tool-button.success { color: var(--success); border-color: rgba(134, 239, 172, .35); }
-.keyboard-help { margin-top: 8px; color: #64748b; font: 10px ui-monospace, SFMono-Regular, Consolas, monospace; text-align: center; }
-.badge {
-  display: inline-flex; align-items: center; height: 28px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0 9px;
-  color: var(--muted);
-  background: rgba(15, 20, 31, .72);
-  font-size: 11px; white-space: nowrap;
-}
-main {
-  position: fixed;
-  inset: var(--header-h) 0 var(--footer-h) 0;
-  display: grid;
-  grid-template-columns: minmax(420px, 1.45fr) minmax(340px, .9fr);
-  gap: 1px;
-  background: var(--border);
-  overflow: hidden;
-}
-.panel { min-width: 0; min-height: 0; overflow: auto; background: rgba(15, 20, 31, .9); overscroll-behavior: contain; scrollbar-gutter: stable; }
-.panel-title {
-  position: sticky; top: 0; z-index: 4;
-  min-height: 41px;
-  display: flex; align-items: center;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(15, 20, 31, .94);
-  backdrop-filter: blur(12px);
-  color: var(--muted);
-  font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase;
-}
-#code { margin: 0; padding: 12px 0 48px; font: 13px/1.72 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; tab-size: 4; }
-.code-line { display: block; min-height: 23px; padding: 0 20px 0 8px; border-left: 3px solid transparent; }
-.code-line::before { display: inline-block; width: 50px; margin-right: 16px; text-align: right; color: #526076; content: attr(data-line); user-select: none; }
-.code-line.active {
-  border-left-color: var(--accent);
-  background: linear-gradient(90deg, rgba(124, 140, 255, .18), rgba(124, 140, 255, .035));
-  color: #fff;
-}
-.meta { padding: 14px 16px; border-bottom: 1px solid var(--border); font: 12px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace; }
-pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
-.origin { margin: 14px 16px; padding: 15px; border: 1px solid rgba(124, 140, 255, .3); border-radius: 14px; background: linear-gradient(145deg, rgba(124,140,255,.12), rgba(21,27,40,.86)); box-shadow: var(--shadow); }
-.origin-title { margin-bottom: 8px; color: #eef2ff; font-size: 14px; font-weight: 800; }
-.origin-summary { margin-bottom: 11px; color: var(--soft); font-size: 13px; line-height: 1.58; }
-.origin-location { margin-bottom: 11px; color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; }
-.origin-hint { margin-top: 10px; color: #fde68a; font-size: 12px; }
-.origin button { min-height: 34px; padding: 0 11px; border: 1px solid rgba(124,140,255,.35); border-radius: 9px; background: rgba(124,140,255,.12); color: #dfe4ff; font-size: 12px; font-weight: 700; }
-.change { border-bottom: 1px solid var(--border); padding: 12px 16px; }
-.change-name { margin-bottom: 7px; font-size: 12px; font-weight: 800; color: var(--soft); }
-.before { color: #fda4af; }
-.after { color: var(--success); margin-top: 5px; }
-.empty { color: #64748b; padding: 16px; font-size: 12px; }
-footer {
-  position: fixed;
-  inset: auto 0 0 0;
-  z-index: 35;
-  height: var(--footer-h);
-  padding: 14px 22px 12px;
-  border-top: 1px solid var(--border);
-  background: rgba(8, 11, 18, .94);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 -16px 38px rgba(0, 0, 0, .24);
-}
-.timeline { display: grid; grid-template-columns: 36px minmax(120px, 1fr) 36px 250px; align-items: center; gap: 11px; }
-.nav-button {
-  width: 36px; height: 34px; padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--surface-2);
-  color: var(--soft);
-}
-.nav-button:disabled { cursor: not-allowed; opacity: .35; }
-input[type=range] { width: 100%; accent-color: var(--accent); cursor: ew-resize; }
-#stepLabel { width: 250px; text-align: right; font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--soft); white-space: nowrap; }
-#location { margin-top: 10px; padding-left: 94px; color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 920px) {
-  :root { --header-h: 118px; --footer-h: 112px; }
-  header { grid-template-columns: 1fr; align-content: center; gap: 10px; }
-  .header-tools { justify-content: flex-start; }
-  main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-  .view-switch { width: 210px; }
-  .timeline { grid-template-columns: 34px minmax(90px,1fr) 34px; }
-  #stepLabel { grid-column: 1 / -1; width: auto; text-align: center; }
-  #location { padding-left: 0; text-align: center; }
-  #eventCount, #traceStats, .tool-button { display: none; }
-}
+:root{color-scheme:dark;--bg:#080a10;--panel:#0d111a;--panel2:#121824;--panel3:#182131;--border:#263247;--text:#eef2ff;--muted:#8e9bb0;--accent:#7c8cff;--accent2:#51d6c7;--danger:#fb7185;--warning:#fbbf24;--success:#86efac;--line:#1b2535;--shadow:0 20px 60px rgba(0,0,0,.35);--header:68px;--transport:116px}
+html[data-theme="light"]{color-scheme:light;--bg:#f3f5f9;--panel:#fff;--panel2:#f8fafc;--panel3:#edf2f7;--border:#d8e0ec;--text:#152033;--muted:#66758c;--line:#edf1f6;--shadow:0 18px 48px rgba(31,41,55,.12)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 15% -20%,rgba(124,140,255,.16),transparent 35%),var(--bg);color:var(--text)}button,input,select{font:inherit}
+.app-header{position:fixed;z-index:20;inset:0 0 auto;height:var(--header);display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px)}
+.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(124,140,255,.28),rgba(81,214,199,.1));border:1px solid rgba(124,140,255,.38);font-weight:900}.brand{min-width:0;flex:1}.brand h1{font-size:15px;margin:0}.crash{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--danger);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}.header-actions{display:flex;align-items:center;gap:7px}.btn,.seg button{height:36px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);color:var(--muted);cursor:pointer;font-size:12px;font-weight:700;padding:0 11px}.btn:hover,.seg button:hover{color:var(--text);background:var(--panel3)}.btn.primary{color:white;background:linear-gradient(135deg,#6d7cff,#5264df);border-color:transparent}.btn.success{color:var(--success)}.seg{height:38px;border:1px solid var(--border);border-radius:11px;padding:3px;background:var(--panel);display:flex}.seg button{height:30px;border:0;background:transparent}.seg button.active{color:var(--text);background:var(--panel3)}#languageToggle{width:72px}.workspace{position:fixed;inset:var(--header) 0 var(--transport);display:grid;grid-template-columns:minmax(0,1.55fr) minmax(350px,.85fr);gap:10px;padding:10px;overflow:hidden}.panel{min-width:0;min-height:0;border:1px solid var(--border);border-radius:14px;background:color-mix(in srgb,var(--panel) 96%,transparent);box-shadow:var(--shadow);overflow:hidden}.panel-head{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;border-bottom:1px solid var(--border);background:var(--panel2)}.panel-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.file-name{max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted)}.code-scroll{height:calc(100% - 46px);overflow:auto;scrollbar-gutter:stable}.code-line{display:grid;grid-template-columns:34px 50px minmax(0,1fr);min-height:24px;font:13px/24px ui-monospace,SFMono-Regular,Consolas,monospace;border-left:3px solid transparent}.code-line:hover{background:rgba(124,140,255,.05)}.code-line.active{background:rgba(124,140,255,.14);border-left-color:var(--accent)}.code-line.crash-line{box-shadow:inset 0 0 0 1px rgba(251,113,133,.35)}.code-line.origin-line:not(.active){background:rgba(251,191,36,.08);border-left-color:var(--warning)}.arrow{text-align:center;color:transparent}.active .arrow{color:var(--accent2)}.line-no{text-align:right;padding-right:10px;color:#58667c;user-select:none}.code{white-space:pre;padding-right:20px}.kw{color:#c792ea}.str{color:#c3e88d}.num{color:#f78c6c}.com{color:#637777;font-style:italic}.fn{color:#82aaff}.right{display:grid;grid-template-rows:minmax(180px,.72fr) minmax(230px,1fr);gap:10px;min-height:0}.event-card{padding:14px;overflow:auto;height:calc(100% - 46px)}.event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.metric{padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}.metric label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.metric b{display:block;margin-top:5px;font:12px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.origin{margin-top:10px;padding:11px;border:1px solid rgba(251,191,36,.25);border-radius:11px;background:rgba(251,191,36,.07)}.origin h3{font-size:11px;margin:0 0 6px;color:var(--warning);text-transform:uppercase}.origin p{margin:0 0 9px;color:var(--muted);font-size:12px;line-height:1.55}.tabs{display:flex;gap:4px}.tab{height:30px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;padding:0 9px}.tab.active{background:var(--panel3);color:var(--text)}.tab-body{height:calc(100% - 46px);overflow:auto;padding:10px}.variable{border-bottom:1px solid var(--line);padding:8px 6px}.variable:last-child{border-bottom:0}.var-top{display:flex;justify-content:space-between;gap:10px}.var-name{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--accent2)}.var-type{font-size:10px;color:var(--muted)}.var-value{margin-top:5px;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text);white-space:pre-wrap;word-break:break-word}.variable.changed{background:rgba(124,140,255,.07);border-radius:8px}.change{padding:9px;border-bottom:1px solid var(--line);font:12px ui-monospace,SFMono-Regular,Consolas,monospace}.before{color:var(--danger)}.after{color:var(--success)}.frame{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid var(--line);cursor:pointer}.frame:hover{background:var(--panel3)}.frame-depth{width:22px;color:var(--muted);font:10px monospace}.frame-main{min-width:0}.frame-fn{font:12px monospace;color:var(--accent2)}.frame-loc{font:10px monospace;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.transport{position:fixed;z-index:20;inset:auto 0 0;height:var(--transport);border-top:1px solid var(--border);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(18px);padding:10px 18px}.transport-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px}.controls{display:flex;gap:6px}.icon-btn{width:36px;height:36px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);color:var(--text);cursor:pointer}.icon-btn:hover{background:var(--panel3)}.timeline-wrap{min-width:0}.timeline-meta{display:flex;justify-content:space-between;color:var(--muted);font:10px ui-monospace,SFMono-Regular,Consolas,monospace;margin-bottom:4px}input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}.speed{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px}.speed select{height:32px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text)}.stats{margin-top:9px;display:flex;gap:14px;align-items:center;color:var(--muted);font:10px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap;overflow:hidden}.stats span{overflow:hidden;text-overflow:ellipsis}.toast{position:fixed;z-index:40;right:18px;bottom:132px;padding:10px 13px;border:1px solid var(--border);border-radius:10px;background:var(--panel3);box-shadow:var(--shadow);font-size:12px;opacity:0;transform:translateY(6px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}
+@media(max-width:900px){:root{--header:112px;--transport:126px}.app-header{height:var(--header);align-items:flex-start;padding-top:12px;flex-wrap:wrap}.brand{width:calc(100% - 56px)}.header-actions{width:100%;overflow-x:auto;padding-bottom:8px}.workspace{grid-template-columns:1fr;grid-template-rows:minmax(280px,1.1fr) minmax(300px,1fr)}.right{grid-template-columns:1fr 1fr;grid-template-rows:1fr}.shortcut-only{display:none}}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true">↶</div>
-    <div class="brand-copy"><h1>RewindPy</h1><div class="crash" id="crashTitle"></div></div>
-  </div>
-  <div class="header-tools">
-    <div class="view-switch" id="viewSwitch" aria-label="Timeline view">
-      <button class="view-button" id="sliceView">Crash Slice</button>
-      <button class="view-button" id="allView">All Events</button>
-    </div>
-    <button class="tool-button" id="openSource">Open source</button>
-    <button class="tool-button" id="copyDiagnostics">Copy diagnostics</button>
-    <button class="language-toggle" id="languageToggle" aria-label="Switch language">中文</button>
-    <span class="badge" id="localReport">local report</span>
-    <span class="badge" id="eventCount"></span>
-    <span class="badge" id="traceStats"></span>
+<header class="app-header">
+  <div class="logo">R</div>
+  <div class="brand"><h1 id="reportTitle">RewindPy</h1><div class="crash" id="crashText"></div></div>
+  <div class="header-actions">
+    <div class="seg"><button id="sliceView"></button><button id="allView"></button></div>
+    <button class="btn" id="openSource"></button>
+    <button class="btn" id="copyDiagnostic"></button>
+    <button class="btn" id="copyLocation"></button>
+    <button class="btn" id="themeToggle">☀</button>
+    <button class="btn" id="languageToggle">中文</button>
   </div>
 </header>
-<main>
-  <section class="panel" id="codePanel">
-    <div class="panel-title" id="fileTitle">Source</div>
-    <pre id="code"></pre>
-  </section>
+<main class="workspace">
   <section class="panel">
-    <div class="panel-title" id="executionStateTitle">Execution state</div>
-    <div class="meta" id="eventMeta"></div>
-    <div class="panel-title" id="likelyOriginTitle">Likely origin</div>
-    <div id="origin"></div>
-    <div class="panel-title" id="variableChangesTitle">Variable changes</div>
-    <div id="changes"></div>
-    <div class="panel-title" id="localsSnapshotTitle">Locals snapshot</div>
-    <pre class="meta" id="locals"></pre>
+    <div class="panel-head"><div class="panel-title" id="sourceTitle"></div><div class="file-name" id="fileName"></div></div>
+    <div class="code-scroll" id="codeScroll"><div id="code"></div></div>
+  </section>
+  <section class="right">
+    <section class="panel">
+      <div class="panel-head"><div class="panel-title" id="currentEventTitle"></div><div class="file-name" id="eventBadge"></div></div>
+      <div class="event-card">
+        <div class="event-grid">
+          <div class="metric"><label id="functionLabel"></label><b id="functionValue"></b></div>
+          <div class="metric"><label id="locationLabel"></label><b id="locationValue"></b></div>
+          <div class="metric"><label id="eventLabel"></label><b id="eventValue"></b></div>
+          <div class="metric"><label id="depthLabel"></label><b id="depthValue"></b></div>
+        </div>
+        <div class="origin" id="originCard"><h3 id="originTitle"></h3><p id="originText"></p><button class="btn" id="jumpOrigin"></button></div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><div class="tabs"><button class="tab active" data-tab="variables" id="variablesTab"></button><button class="tab" data-tab="changes" id="changesTab"></button><button class="tab" data-tab="stack" id="stackTab"></button></div><div class="file-name shortcut-only" id="shortcuts"></div></div>
+      <div class="tab-body" id="tabBody"></div>
+    </section>
   </section>
 </main>
-<footer>
-  <div class="timeline">
-    <button class="nav-button" id="prev" aria-label="Previous step">◀</button>
-    <input id="slider" type="range" min="0" value="0" />
-    <button class="nav-button" id="next" aria-label="Next step">▶</button>
-    <div id="stepLabel"></div>
+<footer class="transport">
+  <div class="transport-top">
+    <div class="controls"><button class="icon-btn" id="prev" title="Previous">◀</button><button class="icon-btn" id="play" title="Play">▶</button><button class="icon-btn" id="next" title="Next">▶|</button></div>
+    <div class="timeline-wrap"><div class="timeline-meta"><span id="timelineTitle"></span><span id="stepText"></span></div><input id="slider" type="range" min="0" max="0" value="0" /></div>
+    <div class="speed"><span id="speedLabel"></span><select id="speed"><option value="900">0.5×</option><option value="450" selected>1×</option><option value="220">2×</option><option value="90">4×</option></select></div>
   </div>
-  <div id="location"></div>
-  <div class="keyboard-help" id="keyboardHelp"></div>
+  <div class="stats" id="stats"></div>
 </footer>
+<div class="toast" id="toast"></div>
 <script id="rewind-data" type="application/json">__DATA__</script>
 <script>
-const data = JSON.parse(document.getElementById('rewind-data').textContent);
-const translations = data.translations || {};
-let language = data.language === 'zh' ? 'zh' : 'en';
-function tr(key) { return (translations[language] || translations.en || {})[key] || key; }
-function localized(object, field) {
-  const values = object?.[`${field}_i18n`] || {};
-  return values[language] || object?.[field] || '';
-}
-const allEvents = data.events || [];
-const sources = data.sources || {};
-const crash = data.crash || {};
-const analysis = data.analysis || null;
-const traceStats = data.trace_stats || {};
-const crashSlice = data.crash_slice || {};
-const sliceSteps = new Set(crashSlice.steps || []);
-const slider = document.getElementById('slider');
-const sliceButton = document.getElementById('sliceView');
-const allButton = document.getElementById('allView');
-const languageToggle = document.getElementById('languageToggle');
-const codePanel = document.getElementById('codePanel');
-const openSourceButton = document.getElementById('openSource');
-const copyDiagnosticsButton = document.getElementById('copyDiagnostics');
-let currentEvent = null;
-let mode = sliceSteps.size ? 'slice' : 'all';
-let events = eventsForMode(mode);
-
-document.getElementById('crashTitle').textContent = `${crash.exception_type || 'Exception'}: ${crash.message || ''}`;
-
-function eventsForMode(nextMode) {
-  if (nextMode === 'slice' && sliceSteps.size) {
-    return allEvents.filter(event => {
-      if (sliceSteps.has(event.step) || sliceSteps.has(event.step_end)) return true;
-      return (event.source_steps || []).some(step => sliceSteps.has(step));
-    });
-  }
-  return allEvents;
-}
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-}
-function pretty(value) { return JSON.stringify(value, null, 2); }
-function nearestIndex(step) {
-  if (!events.length) return 0;
-  let bestIndex = 0;
-  let bestDistance = Number.POSITIVE_INFINITY;
-  events.forEach((event, index) => {
-    const start = Number(event.step);
-    const end = Number(event.step_end ?? event.step);
-    const target = Number(step);
-    const distance = target >= start && target <= end
-      ? 0
-      : Math.min(Math.abs(start - target), Math.abs(end - target));
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestIndex = index;
-    }
-  });
-  return bestIndex;
-}
-function updateViewControls() {
-  sliceButton.classList.toggle('active', mode === 'slice');
-  allButton.classList.toggle('active', mode === 'all');
-  sliceButton.disabled = !sliceSteps.size;
-  const label = mode === 'slice' ? tr('crash_slice') : tr('all_events');
-  document.getElementById('eventCount').textContent = `${label} · ${events.length} ${tr('of')} ${allEvents.length} ${tr('events')}`;
-  const seconds = Number(traceStats.duration_seconds || 0).toFixed(3);
-  const sizeMb = (Number(traceStats.report_size_bytes || 0) / 1024 / 1024).toFixed(2);
-  const details = [
-    `${traceStats.retained_events ?? allEvents.length} ${tr('retained')}`,
-    `${traceStats.discarded_events ?? 0} ${tr('discarded')}`,
-    `${traceStats.compressed_events ?? 0} ${tr('compressed')}`,
-    `${traceStats.report_trimmed_events ?? 0} ${tr('trimmed')}`,
-    `${sizeMb} MB ${tr('report_size')}`,
-    `${seconds}s ${tr('trace_time')}`,
-  ];
-  document.getElementById('traceStats').textContent = details.join(' · ');
-}
-function setView(nextMode, preferredStep = null) {
-  const currentEvent = events[Number(slider.value)] || events[events.length - 1];
-  const step = preferredStep ?? currentEvent?.step ?? allEvents[allEvents.length - 1]?.step ?? 0;
-  mode = nextMode === 'slice' && sliceSteps.size ? 'slice' : 'all';
-  events = eventsForMode(mode);
-  slider.max = Math.max(0, events.length - 1);
-  slider.value = nearestIndex(step);
-  updateViewControls();
-  render(Number(slider.value));
-}
-function renderCode(event) {
-  const lines = sources[event.file] || [];
-  const html = lines.map((line, i) => `<span class="code-line ${i + 1 === event.line ? 'active' : ''}" data-line="${i + 1}">${escapeHtml(line)}</span>`).join('\n');
-  document.getElementById('code').innerHTML = html || `<span class="empty">${escapeHtml(tr('source_unavailable'))}</span>`;
-  document.getElementById('fileTitle').textContent = event.file;
-  const active = document.querySelector('.code-line.active');
-  if (active && codePanel) {
-    const targetTop = active.offsetTop - (codePanel.clientHeight / 2) + (active.clientHeight / 2);
-    codePanel.scrollTo({top: Math.max(0, targetTop), behavior: 'auto'});
-  }
-}
-function renderOrigin() {
-  const container = document.getElementById('origin');
-  if (!analysis) {
-    container.innerHTML = `<div class="empty">${escapeHtml(tr('no_origin'))}</div>`;
-    return;
-  }
-  const replacement = analysis.likely_replacement
-    ? `<div class="origin-hint">${escapeHtml(tr('possible_rename'))}: <code>${escapeHtml(analysis.missing_key)}</code> → <code>${escapeHtml(analysis.likely_replacement)}</code></div>`
-    : '';
-  const noneHint = analysis.kind === 'none-value-origin'
-    ? `<div class="origin-hint">${analysis.producer_function
-        ? `${escapeHtml(tr('produced_by'))} <code>${escapeHtml(analysis.producer_function)}()</code>，${escapeHtml(tr('returning_none'))}.`
-        : `<code>${escapeHtml(analysis.variable)}</code> ${escapeHtml(tr('assigned_none'))}.`}</div>`
-    : '';
-  container.innerHTML = `
-    <div class="origin">
-      <div class="origin-title">${escapeHtml(localized(analysis, 'title') || tr('probable_cause'))}</div>
-      <div class="origin-summary">${escapeHtml(localized(analysis, 'summary'))}</div>
-      <div class="origin-location">${escapeHtml(analysis.file)}:${escapeHtml(analysis.line)} in ${escapeHtml(analysis.function)}()</div>
-      <button id="jumpOrigin">${escapeHtml(tr('jump_to_step'))} ${escapeHtml(analysis.origin_step)}</button>
-      ${replacement}
-      ${noneHint}
-    </div>`;
-  document.getElementById('jumpOrigin').onclick = () => {
-    const targetMode = sliceSteps.has(analysis.origin_step) ? 'slice' : 'all';
-    setView(targetMode, analysis.origin_step);
-  };
-}
-function renderChanges(event) {
-  const changes = event.changes || {};
-  const container = document.getElementById('changes');
-  const names = Object.keys(changes);
-  if (!names.length) {
-    container.innerHTML = `<div class="empty">${escapeHtml(tr('no_changes'))}</div>`;
-    return;
-  }
-  container.innerHTML = names.map(name => {
-    const change = changes[name];
-    return `<div class="change"><div class="change-name">${escapeHtml(name)}</div><pre class="before">- ${escapeHtml(pretty(change.before))}</pre><pre class="after">+ ${escapeHtml(pretty(change.after))}</pre></div>`;
-  }).join('');
-}
-function render(index) {
-  if (!events.length) {
-    document.getElementById('code').innerHTML = `<span class="empty">${escapeHtml(tr('no_events'))}</span>`;
-    return;
-  }
-  const safeIndex = Math.max(0, Math.min(index, events.length - 1));
-  slider.value = safeIndex;
-  const event = events[safeIndex];
-  currentEvent = event;
-  renderCode(event);
-  renderChanges(event);
-  document.getElementById('locals').textContent = pretty(event.locals || {});
-  const repeatBadge = event.event === 'repeat'
-    ? `<span class="badge">${escapeHtml(tr('repeated_cycle'))} · ${escapeHtml(event.repeat_count)} ${escapeHtml(tr('times'))}</span>`
-    : `<span class="badge">${escapeHtml(event.event)}</span>`;
-  document.getElementById('eventMeta').innerHTML = [
-    repeatBadge,
-    `<span class="badge">${escapeHtml(event.function)}</span>`,
-    event.exception_type ? `<div class="crash">${escapeHtml(event.exception_type)}: ${escapeHtml(event.exception_message || '')}</div>` : ''
-  ].join('');
-  const viewLabel = mode === 'slice' ? tr('crash_slice') : tr('all_events');
-  const stepRange = event.step_end && event.step_end !== event.step
-    ? `${event.step}–${event.step_end}`
-    : `${event.step}`;
-  document.getElementById('stepLabel').textContent = `${tr('step')} ${stepRange} · ${safeIndex + 1}/${events.length} · ${viewLabel}`;
-  const changeLocation = event.change_line && Object.keys(event.changes || {}).length
-    ? ` · ${tr('changes_caused')} ${event.change_line}`
-    : '';
-  document.getElementById('location').textContent = `${event.file}:${event.line} in ${event.function}()${changeLocation}`;
-  document.getElementById('prev').disabled = safeIndex === 0;
-  document.getElementById('next').disabled = safeIndex === events.length - 1;
-}
-function sourceUri(event) {
-  if (!event?.file) return null;
-  const rawPath = String(event.file);
-  const root = String(data.project_root || '');
-  const absolutePath = /^(?:[A-Za-z]:[\\/]|\/)/.test(rawPath)
-    ? rawPath
-    : `${root.replace(/[\\/]$/, '')}/${rawPath}`;
-  const normalized = absolutePath.replace(/\\/g, '/');
-  const encodedPath = normalized.split('/').map(encodeURIComponent).join('/');
-  return `vscode://file/${encodedPath}:${Number(event.line || 1)}`;
-}
-function openCurrentSource() {
-  const uri = sourceUri(currentEvent);
-  if (uri) window.location.href = uri;
-}
-function diagnosticsText() {
-  const location = currentEvent
-    ? `${currentEvent.file}:${currentEvent.line} in ${currentEvent.function}()`
-    : '';
-  const origin = analysis ? `\n${localized(analysis, 'title')}: ${localized(analysis, 'summary')}` : '';
-  return `RewindPy\n${crash.exception_type || 'Exception'}: ${crash.message || ''}\n${location}${origin}`;
-}
-async function copyDiagnostics() {
-  try {
-    await navigator.clipboard.writeText(diagnosticsText());
-    copyDiagnosticsButton.textContent = tr('copied');
-    copyDiagnosticsButton.classList.add('success');
-  } catch (_error) {
-    copyDiagnosticsButton.textContent = tr('copy_failed');
-  }
-  window.setTimeout(() => {
-    copyDiagnosticsButton.textContent = tr('copy_diagnostics');
-    copyDiagnosticsButton.classList.remove('success');
-  }, 1400);
-}
-openSourceButton.onclick = openCurrentSource;
-copyDiagnosticsButton.onclick = copyDiagnostics;
-slider.addEventListener('input', () => render(Number(slider.value)));
-document.getElementById('prev').onclick = () => render(Number(slider.value) - 1);
-document.getElementById('next').onclick = () => render(Number(slider.value) + 1);
-sliceButton.onclick = () => setView('slice');
-allButton.onclick = () => setView('all');
-function applyLanguage(nextLanguage) {
-  language = nextLanguage === 'zh' ? 'zh' : 'en';
-  document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
-  document.title = tr('report_title');
-  document.getElementById('viewSwitch').setAttribute('aria-label', tr('timeline_view'));
-  sliceButton.textContent = tr('crash_slice');
-  allButton.textContent = tr('all_events');
-  document.getElementById('localReport').textContent = tr('local_report');
-  document.getElementById('executionStateTitle').textContent = tr('execution_state');
-  document.getElementById('likelyOriginTitle').textContent = tr('likely_origin');
-  document.getElementById('variableChangesTitle').textContent = tr('variable_changes');
-  document.getElementById('localsSnapshotTitle').textContent = tr('locals_snapshot');
-  openSourceButton.textContent = tr('open_source');
-  openSourceButton.title = tr('open_source_title');
-  copyDiagnosticsButton.textContent = tr('copy_diagnostics');
-  copyDiagnosticsButton.title = tr('copy_diagnostics_title');
-  document.getElementById('keyboardHelp').textContent = tr('keyboard_help');
-  languageToggle.textContent = language === 'en' ? '中文' : 'EN';
-  languageToggle.setAttribute('aria-label', language === 'en' ? '切换到中文' : 'Switch to English');
-  renderOrigin();
-  updateViewControls();
-  render(Number(slider.value));
-}
-languageToggle.onclick = () => applyLanguage(language === 'en' ? 'zh' : 'en');
-document.addEventListener('keydown', event => {
-  const key = event.key.toLowerCase();
-  if (event.key === 'ArrowLeft' || key === 'j') document.getElementById('prev').click();
-  if (event.key === 'ArrowRight' || key === 'k') document.getElementById('next').click();
-  if (key === 'o') openCurrentSource();
-  if (key === 'c') copyDiagnostics();
-});
-applyLanguage(language);
-setView(mode, allEvents[allEvents.length - 1]?.step);
+const payload=JSON.parse(document.getElementById('rewind-data').textContent);
+const translations=payload.translations;
+let language=payload.language==='zh'?'zh':'en';let mode='slice';let events=[];let index=0;let playing=false;let timer=null;let activeTab='variables';
+const $=id=>document.getElementById(id);const tr=k=>(translations[language]||translations.en)[k]||k;
+const allEvents=payload.events||[];const sliceSteps=new Set((payload.crash_slice&&payload.crash_slice.steps)||[]);
+function eventStepEnd(event){return event.step_end??event.step} // report guard compatibility
+function selectEvents(){if(mode==='all'||!sliceSteps.size)return allEvents;return allEvents.filter(e=>sliceSteps.has(e.step)||sliceSteps.has(eventStepEnd(e)))}
+function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function highlight(line){let s=escapeHtml(line);s=s.replace(/(#.*)$/g,'<span class="com">$1</span>');s=s.replace(/(&quot;.*?&quot;|&#39;.*?&#39;)/g,'<span class="str">$1</span>');s=s.replace(/\b(def|return|for|in|if|else|elif|class|import|from|as|try|except|raise|with|None|True|False|and|or|not)\b/g,'<span class="kw">$1</span>');s=s.replace(/\b(\d+(?:\.\d+)?)\b/g,'<span class="num">$1</span>');s=s.replace(/\b([A-Za-z_]\w*)(?=\()/g,'<span class="fn">$1</span>');return s}
+function current(){return events[index]||null}
+function sourceFor(file){const sources=payload.sources||{};const normalized=String(file??'').replaceAll('\\','/');return sources[file]??sources[normalized]??Object.entries(sources).find(([key])=>String(key).replaceAll('\\','/')===normalized)?.[1]??''}
+function sourceLines(source){if(Array.isArray(source))return source.map(line=>String(line??''));if(typeof source==='string')return source.split(/\r?\n/);if(source&&typeof source==='object'){if(Array.isArray(source.lines))return source.lines.map(line=>String(line??''));if(Array.isArray(source.source))return source.source.map(line=>String(line??''));if(typeof source.source==='string')return source.source.split(/\r?\n/);if(Array.isArray(source.content))return source.content.map(line=>String(line??''));if(typeof source.content==='string')return source.content.split(/\r?\n/);}return[]}
+function renderCode(event){const root=$('code');const source=sourceFor(event?.file);$('fileName').textContent=event?.file||'';if(!source){root.innerHTML=`<div style="padding:18px;color:var(--muted)">${tr('no_source')}</div>`;return}const lines=sourceLines(source);const crashLine=payload.crash?.line;const originLine=payload.analysis?.origin_line;root.innerHTML=lines.map((line,i)=>{const n=i+1;const cls=['code-line'];if(n===event.line)cls.push('active');if(n===crashLine&&event.file===payload.crash?.file)cls.push('crash-line');if(n===originLine&&event.file===payload.analysis?.origin_file)cls.push('origin-line');return `<div class="${cls.join(' ')}" data-line="${n}"><span class="arrow">▶</span><span class="line-no">${n}</span><span class="code">${highlight(line)}</span></div>`}).join('');requestAnimationFrame(()=>{const active=root.querySelector('.active');if(active){const scroller=$('codeScroll');const top=active.offsetTop-scroller.clientHeight/2;scroller.scrollTo({top:Math.max(0,top),behavior:'smooth'})}})}
+function valueType(v){if(v===null)return'NoneType';if(Array.isArray(v))return'list';return typeof v==='object'?(v.type||'object'):typeof v}
+function valueText(v){if(v&&typeof v==='object'&&'repr'in v)return v.repr;try{return typeof v==='string'?v:JSON.stringify(v,null,2)}catch{return String(v)}}
+function renderVariables(event){const locals=event?.locals||{};const changed=new Set(Object.keys(event?.changes||{}));const entries=Object.entries(locals);if(!entries.length)return `<div style="color:var(--muted);padding:8px">${tr('no_variables')}</div>`;return entries.map(([name,v])=>`<div class="variable ${changed.has(name)?'changed':''}"><div class="var-top"><span class="var-name">${escapeHtml(name)}</span><span class="var-type">${escapeHtml(valueType(v))}</span></div><div class="var-value">${escapeHtml(valueText(v))}</div></div>`).join('')}
+function renderChanges(event){const entries=Object.entries(event?.changes||{});if(!entries.length)return `<div style="color:var(--muted);padding:8px">${tr('no_changes')}</div>`;return entries.map(([name,d])=>`<div class="change"><b>${escapeHtml(name)}</b><div class="before">− ${escapeHtml(valueText(d.before))}</div><div class="after">+ ${escapeHtml(valueText(d.after))}</div></div>`).join('')}
+function stackAt(idx){const frames=[];for(let i=0;i<=idx;i++){const e=events[i];if(e.event==='call')frames.push(e);if(e.event==='return'&&frames.length)frames.pop()}const now=events[idx];if(now&&!frames.some(f=>f.function===now.function&&f.depth===now.depth))frames.push(now);return frames}
+function renderStack(){const frames=stackAt(index);return frames.slice().reverse().map(frame=>`<div class="frame" data-step="${frame.step}"><span class="frame-depth">${frame.depth}</span><div class="frame-main"><div class="frame-fn">${escapeHtml(frame.function)}()</div><div class="frame-loc">${escapeHtml(frame.file)}:${frame.line}</div></div></div>`).join('')}
+function renderTab(event){$('tabBody').innerHTML=activeTab==='variables'?renderVariables(event):activeTab==='changes'?renderChanges(event):renderStack();document.querySelectorAll('.frame').forEach(el=>el.onclick=()=>jumpStep(Number(el.dataset.step)))}
+function renderOrigin(){const a=payload.analysis;const card=$('originCard');if(!a){$('originText').textContent=tr('no_origin');$('jumpOrigin').style.display='none';return}card.style.display='block';$('originText').textContent=a.summary||a.reason||tr('no_origin');$('jumpOrigin').style.display=a.origin_step==null?'none':'inline-flex'}
+function render(){const event=current();if(!event)return;renderCode(event);renderTab(event);$('functionValue').textContent=event.function||'—';$('locationValue').textContent=`${event.file||'—'}:${event.line||'—'}`;$('eventValue').textContent=event.repeat_count?`${event.event} · ${tr('repeat')} ${event.repeat_count} ${tr('times')}`:event.event;$('depthValue').textContent=String(event.depth??0);$('eventBadge').textContent=`#${event.step}`;$('slider').value=String(index);$('stepText').textContent=`${tr('step')} ${index+1} ${tr('of')} ${events.length}`}
+function setMode(next,keepStep){const step=keepStep??current()?.step;mode=next;events=selectEvents();index=Math.max(0,events.findIndex(e=>e.step===step));if(index<0)index=events.length-1;$('slider').max=String(Math.max(0,events.length-1));$('sliceView').classList.toggle('active',mode==='slice');$('allView').classList.toggle('active',mode==='all');render()}
+function jumpStep(step){let found=events.findIndex(e=>e.step===step||eventStepEnd(e)===step);if(found<0&&mode==='slice'){setMode('all',step);found=events.findIndex(e=>e.step===step||eventStepEnd(e)===step)}if(found>=0){index=found;render()}}
+function move(delta){index=Math.min(events.length-1,Math.max(0,index+delta));render();if(index===events.length-1&&playing)togglePlay(false)}
+function togglePlay(force){playing=force??!playing;$('play').textContent=playing?'❚❚':'▶';clearInterval(timer);if(playing)timer=setInterval(()=>move(1),Number($('speed').value))}
+function sourceUri(){const e=current();if(!e)return'';let path=e.file||'';if(payload.project_root&&!/^(?:[A-Za-z]:[\\/]|\/)/.test(path))path=payload.project_root.replace(/[\\/]$/,'')+'/'+path;return `vscode://file/${encodeURI(path.replaceAll('\\','/'))}:${e.line||1}`}
+function openCurrentSource(){const uri=sourceUri();if(uri)window.location.href=uri}
+function locationText(){const e=current();return e?`${e.file}:${e.line}`:''}
+function diagnosticText(){const e=current();return [`${payload.crash?.exception_type||'Error'}: ${payload.crash?.message||''}`,locationText(),payload.analysis?.summary||'',`step=${e?.step??''}`].filter(Boolean).join('\n')}
+async function copy(text){try{await navigator.clipboard.writeText(text);toast(tr('copied'))}catch{toast(tr('copy_failed'))}}
+function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1200)}
+function statsText(){const s=payload.trace_stats||{};const parts=[`${s.retained_events??allEvents.length} ${tr('retained')}`,`${s.discarded_events??0} ${tr('discarded')}`,`${s.compressed_events??0} ${tr('compressed')}`,`${s.report_trimmed_events??0} ${tr('trimmed')}`,`${s.traced_files??0} ${tr('files')}`,`${Number(s.duration_seconds??0).toFixed(3)}s ${tr('trace_time')}`,`${((s.report_size_bytes??0)/1024).toFixed(1)}KB ${tr('report_size')}`];$('stats').innerHTML=parts.map(x=>`<span>${x}</span>`).join('')}
+function applyLanguage(){document.documentElement.lang=language;$('reportTitle').textContent=tr('report_title');$('sourceTitle').textContent=tr('source');$('currentEventTitle').textContent=tr('current_event');$('functionLabel').textContent=tr('function');$('locationLabel').textContent=tr('location');$('eventLabel').textContent=tr('event');$('depthLabel').textContent=tr('depth');$('variablesTab').textContent=tr('variables');$('changesTab').textContent=tr('changes');$('stackTab').textContent=tr('call_stack');$('originTitle').textContent=tr('origin');$('jumpOrigin').textContent=tr('jump_origin');$('sliceView').textContent=tr('crash_slice');$('allView').textContent=tr('all_events');$('openSource').textContent=tr('open_source');$('copyDiagnostic').textContent=tr('copy_diagnostic');$('copyLocation').textContent=tr('copy_location');$('timelineTitle').textContent=tr('timeline');$('speedLabel').textContent=tr('speed');$('shortcuts').textContent=tr('shortcuts');$('languageToggle').textContent=language==='en'?'中文':'EN';renderOrigin();statsText();render()}
+$('slider').oninput=e=>{index=Number(e.target.value);render()};$('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('play').onclick=()=>togglePlay();$('speed').onchange=()=>{if(playing)togglePlay(true)};$('sliceView').onclick=()=>setMode('slice');$('allView').onclick=()=>setMode('all');$('languageToggle').onclick=()=>{language=language==='en'?'zh':'en';applyLanguage()};$('themeToggle').onclick=()=>{const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';$('themeToggle').textContent=root.dataset.theme==='dark'?'☀':'☾'};$('openSource').onclick=openCurrentSource;$('copyDiagnostic').onclick=()=>copy(diagnosticText());$('copyLocation').onclick=()=>copy(locationText());$('jumpOrigin').onclick=()=>jumpStep(Number(payload.analysis?.origin_step));document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{activeTab=tab.dataset.tab;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===tab));renderTab(current())});document.addEventListener('keydown',event=>{if(['INPUT','SELECT','TEXTAREA'].includes(event.target.tagName))return;const key=event.key.toLowerCase();if(event.key==='ArrowLeft'||key==='j'){event.preventDefault();move(-1)}if(event.key==='ArrowRight'||key==='k'){event.preventDefault();move(1)}if(event.code==='Space'){event.preventDefault();togglePlay()}if (key === 'o') openCurrentSource();if (key === 'c') copy(diagnosticText());if (key === 'l') copy(locationText())});
+$('crashText').textContent=`${payload.crash?.exception_type||'Error'}: ${payload.crash?.message||''}`;renderOrigin();setMode('slice');applyLanguage();
 </script>
 </body>
-</html>
-'''
+</html>'''
 
 
 def write_report(output_path: Path, payload: dict[str, Any]) -> None:
