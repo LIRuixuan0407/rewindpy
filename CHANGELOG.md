@@ -4,6 +4,8 @@ All notable changes to RewindPy are documented here.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-06
+
 ### Added
 
 - PyPI Trusted Publishing through GitHub Actions and short-lived OIDC credentials.
