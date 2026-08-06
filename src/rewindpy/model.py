@@ -15,6 +15,7 @@ class TraceEvent:
     locals: dict[str, Any] = field(default_factory=dict)
     changes: dict[str, dict[str, Any]] = field(default_factory=dict)
     change_line: int | None = None
+    return_value: Any = None
     exception_type: str | None = None
     exception_message: str | None = None
 

@@ -1,8 +1,15 @@
 from __future__ import annotations
 
 import ast
+import re
 from difflib import get_close_matches
 from typing import Any
+
+
+_NONE_ATTRIBUTE_PATTERN = re.compile(
+    r"'NoneType' object has no attribute '([^']+)'"
+)
+_NOT_SET = "<not set>"
 
 
 def analyze_crash(
@@ -11,12 +18,22 @@ def analyze_crash(
 ) -> dict[str, Any] | None:
     """Find a likely earlier state change that explains the crash.
 
-    The first MVP analysis focuses on KeyError because it has a concrete,
-    traceable failure condition: a mapping key is missing at the crash site.
+    Supported analyses currently include:
+    - a dictionary key removed or probably renamed before ``KeyError``;
+    - a local value that became ``None`` before a NoneType ``AttributeError``.
     """
-    if crash.get("exception_type") != "KeyError":
-        return None
+    exception_type = crash.get("exception_type")
+    if exception_type == "KeyError":
+        return _analyze_keyerror(events, crash)
+    if exception_type == "AttributeError":
+        return _analyze_none_attribute_error(events, crash)
+    return None
 
+
+def _analyze_keyerror(
+    events: list[dict[str, Any]],
+    crash: dict[str, Any],
+) -> dict[str, Any] | None:
     missing_key = _parse_keyerror_key(str(crash.get("message", "")))
     if missing_key is None:
         return None
@@ -44,7 +61,8 @@ def analyze_crash(
 
             return {
                 "kind": "missing-key-origin",
-                "summary": _build_summary(
+                "title": "Missing key traced",
+                "summary": _build_key_summary(
                     str(missing_key), distance, variable_path, likely_replacement
                 ),
                 "missing_key": missing_key,
@@ -59,9 +77,102 @@ def analyze_crash(
                 "after": after_mapping,
                 "added_keys": added_keys,
                 "likely_replacement": likely_replacement,
+                "confidence": 0.9 if likely_replacement else 0.8,
             }
 
     return None
+
+
+def _analyze_none_attribute_error(
+    events: list[dict[str, Any]],
+    crash: dict[str, Any],
+) -> dict[str, Any] | None:
+    attribute = _parse_none_attribute(str(crash.get("message", "")))
+    if attribute is None or not events:
+        return None
+
+    crash_index = _find_crash_anchor(events, crash)
+    crash_event = events[crash_index]
+    crash_source = _matching_traceback_source(crash)
+    variable = _select_none_variable(
+        crash_event.get("locals") or {}, crash_source, attribute
+    )
+    if variable is None:
+        return None
+
+    traceback_names = _traceback_local_names(crash)
+    assignment = _find_none_assignment(
+        events,
+        before_or_at=crash_index,
+        preferred_names=traceback_names | {variable},
+        crash_file=crash.get("file"),
+        crash_function=crash.get("function"),
+        crash_variable=variable,
+    )
+
+    producer: tuple[int, dict[str, Any]] | None = None
+    if assignment is not None:
+        assignment_index, assignment_event, upstream_variable = assignment
+        producer = _find_none_return_producer(
+            events,
+            before_index=assignment_index,
+            assignment_depth=assignment_event.get("depth"),
+        )
+    else:
+        upstream_variable = variable
+        assignment_index = crash_index
+        assignment_event = crash_event
+        producer = _find_none_return_producer(
+            events,
+            before_index=crash_index,
+            assignment_depth=crash_event.get("depth"),
+        )
+
+    if producer is not None:
+        origin_index, origin_event = producer
+        reason = "returned-none"
+        producer_function = origin_event.get("function")
+    elif assignment is not None:
+        origin_index = assignment_index
+        origin_event = assignment_event
+        reason = "assigned-none"
+        producer_function = None
+    else:
+        # We know which crash variable is None, but without an earlier assignment
+        # or return event we cannot make a trustworthy origin claim.
+        return None
+
+    crash_step = int(crash_event.get("step", 0))
+    origin_step = int(origin_event.get("step", 0))
+    distance = max(0, crash_step - origin_step)
+    summary = _build_none_summary(
+        variable=variable,
+        upstream_variable=upstream_variable,
+        producer_function=producer_function,
+        distance=distance,
+    )
+
+    return {
+        "kind": "none-value-origin",
+        "title": "None value traced",
+        "summary": summary,
+        "attribute": attribute,
+        "variable": variable,
+        "upstream_variable": upstream_variable,
+        "origin_step": origin_step,
+        "crash_step": crash_step,
+        "steps_before_crash": distance,
+        "file": origin_event.get("file"),
+        "line": (
+            origin_event.get("line")
+            if reason == "returned-none"
+            else origin_event.get("change_line") or origin_event.get("line")
+        ),
+        "function": origin_event.get("function"),
+        "producer_function": producer_function,
+        "reason": reason,
+        "confidence": 0.9 if producer_function else 0.75,
+    }
 
 
 def _parse_keyerror_key(message: str) -> Any | None:
@@ -72,6 +183,152 @@ def _parse_keyerror_key(message: str) -> Any | None:
     except (ValueError, SyntaxError):
         stripped = message.strip().strip("'\"")
         return stripped or None
+
+
+def _parse_none_attribute(message: str) -> str | None:
+    match = _NONE_ATTRIBUTE_PATTERN.fullmatch(message.strip())
+    return match.group(1) if match else None
+
+
+def _matching_traceback_source(crash: dict[str, Any]) -> str:
+    expected_file = crash.get("file")
+    expected_function = crash.get("function")
+    for frame in reversed(crash.get("traceback") or []):
+        if expected_file and frame.get("file") != expected_file:
+            continue
+        if expected_function and frame.get("function") != expected_function:
+            continue
+        return str(frame.get("source") or "")
+    return ""
+
+
+def _select_none_variable(
+    locals_snapshot: dict[str, Any],
+    source: str,
+    attribute: str,
+) -> str | None:
+    none_names = {
+        name for name, value in locals_snapshot.items() if value is None
+    }
+    if not none_names:
+        return None
+
+    source_candidates = _attribute_base_names(source, attribute)
+    matched = sorted(none_names & source_candidates)
+    if len(matched) == 1:
+        return matched[0]
+    if len(none_names) == 1:
+        return next(iter(none_names))
+    return None
+
+
+def _attribute_base_names(source: str, attribute: str) -> set[str]:
+    if not source:
+        return set()
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        pattern = re.compile(rf"\b([A-Za-z_]\w*)\s*\.\s*{re.escape(attribute)}\b")
+        return set(pattern.findall(source))
+
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Attribute) or node.attr != attribute:
+            continue
+        root = node.value
+        while isinstance(root, (ast.Attribute, ast.Subscript, ast.Call)):
+            if isinstance(root, ast.Attribute):
+                root = root.value
+            elif isinstance(root, ast.Subscript):
+                root = root.value
+            else:
+                break
+        if isinstance(root, ast.Name):
+            names.add(root.id)
+    return names
+
+
+def _traceback_local_names(crash: dict[str, Any]) -> set[str]:
+    names: set[str] = set()
+    for frame in crash.get("traceback") or []:
+        if not frame.get("project_file", True):
+            continue
+        source = str(frame.get("source") or "")
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            names.update(re.findall(r"\b[A-Za-z_]\w*\b", source))
+            continue
+        names.update(
+            node.id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
+        )
+    return names
+
+
+def _find_none_assignment(
+    events: list[dict[str, Any]],
+    *,
+    before_or_at: int,
+    preferred_names: set[str],
+    crash_file: Any,
+    crash_function: Any,
+    crash_variable: str,
+) -> tuple[int, dict[str, Any], str] | None:
+    candidates: list[tuple[tuple[int, int, int], int, dict[str, Any], str]] = []
+    for index in range(before_or_at, -1, -1):
+        event = events[index]
+        for name, change in (event.get("changes") or {}).items():
+            if change.get("after") is not None:
+                continue
+            if change.get("before") is None:
+                continue
+
+            is_parameter_binding = (
+                event.get("event") == "call"
+                and event.get("file") == crash_file
+                and event.get("function") == crash_function
+                and name == crash_variable
+            )
+            outside_crash_frame = not (
+                event.get("file") == crash_file
+                and event.get("function") == crash_function
+            )
+            rank = (
+                1 if name in preferred_names else 0,
+                1 if outside_crash_frame else 0,
+                0 if is_parameter_binding else 1,
+            )
+            candidates.append((rank, index, event, name))
+
+    if not candidates:
+        return None
+    _, index, event, name = max(candidates, key=lambda item: (item[0], item[1]))
+    return index, event, name
+
+
+def _find_none_return_producer(
+    events: list[dict[str, Any]],
+    *,
+    before_index: int,
+    assignment_depth: Any,
+    max_gap: int = 8,
+) -> tuple[int, dict[str, Any]] | None:
+    minimum = max(-1, before_index - max_gap - 1)
+    for index in range(before_index - 1, minimum, -1):
+        event = events[index]
+        if event.get("event") != "return" or event.get("return_value") is not None:
+            continue
+        event_depth = event.get("depth")
+        if (
+            isinstance(assignment_depth, int)
+            and isinstance(event_depth, int)
+            and event_depth <= assignment_depth
+        ):
+            continue
+        return index, event
+    return None
 
 
 def _last_exception_step(events: list[dict[str, Any]]) -> int | None:
@@ -109,7 +366,7 @@ def _closest_key(missing_key: str, added_keys: list[str]) -> str | None:
     return matches[0] if matches else None
 
 
-def _build_summary(
+def _build_key_summary(
     missing_key: str,
     distance: int,
     variable: str,
@@ -123,6 +380,28 @@ def _build_summary(
     if likely_replacement:
         summary += f" It may have been renamed to {likely_replacement!r}."
     return summary
+
+
+def _build_none_summary(
+    *,
+    variable: str,
+    upstream_variable: str,
+    producer_function: Any,
+    distance: int,
+) -> str:
+    step_word = "step" if distance == 1 else "steps"
+    if producer_function:
+        if upstream_variable != variable:
+            return (
+                f"{variable!r} received None through {upstream_variable!r}. "
+                f"{producer_function}() returned None {distance} {step_word} "
+                "before the crash."
+            )
+        return (
+            f"{variable!r} received None from {producer_function}() "
+            f"{distance} {step_word} before the crash."
+        )
+    return f"{variable!r} became None {distance} {step_word} before the crash."
 
 
 def build_crash_slice(
@@ -159,14 +438,10 @@ def build_crash_slice(
         range(max(0, anchor_index - context_steps + 1), anchor_index + 1)
     )
 
-    # Keep exception propagation visible even when it occurs after the
-    # innermost crash event selected as the anchor.
     relevant_indices.update(
         index for index, event in enumerate(events) if event.get("event") == "exception"
     )
 
-    # Add two lightweight checkpoints for every project frame in the traceback:
-    # the active call and the line represented by the traceback frame.
     for frame in crash.get("traceback") or []:
         if not frame.get("project_file", True):
             continue
