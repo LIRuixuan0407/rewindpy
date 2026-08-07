@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from rewindpy.schema import verify_report_integrity
-from scripts.build_live_demo import build_live_demo
+from scripts.build_live_demo import _stable_value, build_live_demo
 
 
 def _payload(path: Path) -> dict:
@@ -16,6 +16,19 @@ def _payload(path: Path) -> dict:
     )
     assert match is not None
     return json.loads(match.group(1))
+
+
+def test_live_demo_normalizes_python_module_paths() -> None:
+    local = "<module 'json' from '/usr/lib/python3.12/json/__init__.py'>"
+    github = (
+        "<module 'json' from "
+        "'/opt/hostedtoolcache/Python/3.12.12/x64/"
+        "lib/python3.12/json/__init__.py'>"
+    )
+    expected = "<module 'json' from '<python-runtime>'>"
+
+    assert _stable_value(local) == expected
+    assert _stable_value(github) == expected
 
 
 def test_live_demo_is_deterministic_and_multi_file(tmp_path: Path) -> None:

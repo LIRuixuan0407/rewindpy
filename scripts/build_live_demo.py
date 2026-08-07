@@ -17,11 +17,13 @@ _DATA_PATTERN = re.compile(
 )
 
 _ADDRESS_PATTERN = re.compile(r"(?<= at )0x[0-9a-fA-F]+(?=>)")
+_MODULE_PATH_PATTERN = re.compile(r"(<module '[^']+' from ')[^']+('>)")
 
 
 def _stable_value(value: Any) -> Any:
     if isinstance(value, str):
-        return _ADDRESS_PATTERN.sub("0x…", value)
+        value = _ADDRESS_PATTERN.sub("0x…", value)
+        return _MODULE_PATH_PATTERN.sub(r"\1<python-runtime>\2", value)
     if isinstance(value, list):
         return [_stable_value(item) for item in value]
     if isinstance(value, dict):
