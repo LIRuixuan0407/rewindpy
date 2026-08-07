@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+import sys
 import tempfile
 import webbrowser
 from pathlib import Path
@@ -142,13 +144,32 @@ def create_demo_report(
                 raise ValueError(text(language, "unknown_demo", kind=kind)) from exc
             target = root / f"{kind.replace('-', '_')}.py"
             target.write_text(source, encoding="utf-8")
-        run_target(
-            target,
-            [],
-            output=output,
-            max_events=max_events,
-            language=language,
-        )
+        module_names: set[str] = set()
+        if kind in _MULTI_FILE_DEMOS:
+            module_names = {
+                ".".join(Path(relative).with_suffix("").parts)
+                for relative in files
+                if relative != entrypoint
+            }
+        previous_modules = {name: sys.modules.get(name) for name in module_names}
+        for name in module_names:
+            sys.modules.pop(name, None)
+        importlib.invalidate_caches()
+        try:
+            run_target(
+                target,
+                [],
+                output=output,
+                max_events=max_events,
+                language=language,
+            )
+        finally:
+            for name in module_names:
+                sys.modules.pop(name, None)
+                previous = previous_modules[name]
+                if previous is not None:
+                    sys.modules[name] = previous
+            importlib.invalidate_caches()
 
     if not output.is_file():
         raise RuntimeError(text(language, "demo_failed"))

@@ -4,6 +4,28 @@ All notable changes to RewindPy are documented here.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-07
+
+### Added
+
+- Versioned Report Schema v2 with validation and SHA-256 integrity checks.
+- Python exception-chain debugging for explicit causes and implicit contexts.
+- Multi-file source navigation and cross-file timeline jumps.
+- `Ctrl+P` file search, current-file search, and global report search.
+- Chromium browser end-to-end tests for report interactions.
+- Report-generation performance benchmarks and CI regression checks.
+- Deterministic GitHub Pages live-demo generation.
+
+### Changed
+
+- Updated the online demo to showcase a multi-file exception chain.
+- Updated English and Chinese documentation for the v0.2.0 workflow.
+- Improved wheel smoke tests to generate and validate multi-file reports.
+
+### Fixed
+
+- Isolated imported demo modules so repeated demo generation remains deterministic.
+
 ### Added
 - Exception-chain capture for explicit causes, implicit contexts, pytest failures, and timeline navigation.
 

@@ -5,35 +5,290 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>RewindPy</title>
 <style>
-:root{color-scheme:dark;--bg:#080a10;--panel:#0d111a;--panel2:#121824;--panel3:#182131;--border:#263247;--text:#eef2ff;--muted:#8e9bb0;--accent:#7c8cff;--accent2:#51d6c7;--danger:#fb7185;--warning:#fbbf24;--success:#86efac;--line:#1b2535;--shadow:0 20px 60px rgba(0,0,0,.35);--header:68px;--transport:116px}
-html[data-theme="light"]{color-scheme:light;--bg:#f3f5f9;--panel:#fff;--panel2:#f8fafc;--panel3:#edf2f7;--border:#d8e0ec;--text:#152033;--muted:#66758c;--line:#edf1f6;--shadow:0 18px 48px rgba(31,41,55,.12)}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 15% -20%,rgba(124,140,255,.16),transparent 35%),var(--bg);color:var(--text)}button,input,select{font:inherit}
-.app-header{position:fixed;z-index:20;inset:0 0 auto;height:var(--header);display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px)}
-.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(124,140,255,.28),rgba(81,214,199,.1));border:1px solid rgba(124,140,255,.38);font-weight:900}.brand{min-width:0;flex:1}.brand h1{font-size:15px;margin:0}.crash{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--danger);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}.header-actions{display:flex;align-items:center;gap:7px}.btn,.seg button{height:36px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);color:var(--muted);cursor:pointer;font-size:12px;font-weight:700;padding:0 11px}.btn:hover,.seg button:hover{color:var(--text);background:var(--panel3)}.btn.primary{color:white;background:linear-gradient(135deg,#6d7cff,#5264df);border-color:transparent}.btn.success{color:var(--success)}.seg{height:38px;border:1px solid var(--border);border-radius:11px;padding:3px;background:var(--panel);display:flex}.seg button{height:30px;border:0;background:transparent}.seg button.active{color:var(--text);background:var(--panel3)}#languageToggle{width:72px}.workspace{position:fixed;inset:var(--header) 0 var(--transport);display:grid;grid-template-columns:minmax(0,1.55fr) minmax(350px,.85fr);gap:10px;padding:10px;overflow:hidden}.panel{min-width:0;min-height:0;border:1px solid var(--border);border-radius:14px;background:color-mix(in srgb,var(--panel) 96%,transparent);box-shadow:var(--shadow);overflow:hidden}.panel-head{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;border-bottom:1px solid var(--border);background:var(--panel2)}.panel-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.file-name{max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted)}.code-scroll{height:calc(100% - 46px);overflow:auto;scrollbar-gutter:stable}.code-line{display:grid;grid-template-columns:34px 50px minmax(0,1fr);min-height:24px;font:13px/24px ui-monospace,SFMono-Regular,Consolas,monospace;border-left:3px solid transparent}.code-line:hover{background:rgba(124,140,255,.05)}.code-line.active{background:rgba(124,140,255,.14);border-left-color:var(--accent)}.code-line.crash-line{box-shadow:inset 0 0 0 1px rgba(251,113,133,.35)}.code-line.origin-line:not(.active){background:rgba(251,191,36,.08);border-left-color:var(--warning)}.arrow{text-align:center;color:transparent}.active .arrow{color:var(--accent2)}.line-no{text-align:right;padding-right:10px;color:#58667c;user-select:none}.code{white-space:pre;padding-right:20px}.kw{color:#c792ea}.str{color:#c3e88d}.num{color:#f78c6c}.com{color:#637777;font-style:italic}.fn{color:#82aaff}.right{display:grid;grid-template-rows:minmax(180px,.72fr) minmax(230px,1fr);gap:10px;min-height:0}.event-card{padding:14px;overflow:auto;height:calc(100% - 46px)}.event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.metric{padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}.metric label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.metric b{display:block;margin-top:5px;font:12px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.origin{margin-top:10px;padding:11px;border:1px solid rgba(251,191,36,.25);border-radius:11px;background:rgba(251,191,36,.07)}.origin h3{font-size:11px;margin:0 0 6px;color:var(--warning);text-transform:uppercase}.origin p{margin:0 0 9px;color:var(--muted);font-size:12px;line-height:1.55}.tabs{display:flex;gap:4px}.tab{height:30px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;padding:0 9px}.tab.active{background:var(--panel3);color:var(--text)}.tab-body{height:calc(100% - 46px);overflow:auto;padding:10px}.variable{border-bottom:1px solid var(--line);padding:8px 6px}.variable:last-child{border-bottom:0}.var-top{display:flex;justify-content:space-between;gap:10px}.var-name{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--accent2)}.var-type{font-size:10px;color:var(--muted)}.var-value{margin-top:5px;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text);white-space:pre-wrap;word-break:break-word}.variable.changed{background:rgba(124,140,255,.07);border-radius:8px}.change{padding:9px;border-bottom:1px solid var(--line);font:12px ui-monospace,SFMono-Regular,Consolas,monospace}.before{color:var(--danger)}.after{color:var(--success)}.frame{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid var(--line);cursor:pointer}.frame:hover{background:var(--panel3)}.frame-depth{width:22px;color:var(--muted);font:10px monospace}.frame-main{min-width:0}.frame-fn{font:12px monospace;color:var(--accent2)}.frame-loc{font:10px monospace;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.transport{position:fixed;z-index:20;inset:auto 0 0;height:var(--transport);border-top:1px solid var(--border);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(18px);padding:10px 18px}.transport-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px}.controls{display:flex;gap:6px}.icon-btn{width:36px;height:36px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);color:var(--text);cursor:pointer}.icon-btn:hover{background:var(--panel3)}.timeline-wrap{min-width:0}.timeline-meta{display:flex;justify-content:space-between;color:var(--muted);font:10px ui-monospace,SFMono-Regular,Consolas,monospace;margin-bottom:4px}input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}.speed{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px}.speed select{height:32px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text)}.stats{margin-top:9px;display:flex;gap:14px;align-items:center;color:var(--muted);font:10px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap;overflow:hidden}.stats span{overflow:hidden;text-overflow:ellipsis}.toast{position:fixed;z-index:40;right:18px;bottom:132px;padding:10px 13px;border:1px solid var(--border);border-radius:10px;background:var(--panel3);box-shadow:var(--shadow);font-size:12px;opacity:0;transform:translateY(6px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}
-@media(max-width:900px){:root{--header:112px;--transport:126px}.app-header{height:var(--header);align-items:flex-start;padding-top:12px;flex-wrap:wrap}.brand{width:calc(100% - 56px)}.header-actions{width:100%;overflow-x:auto;padding-bottom:8px}.workspace{grid-template-columns:1fr;grid-template-rows:minmax(280px,1.1fr) minmax(300px,1fr)}.right{grid-template-columns:1fr 1fr;grid-template-rows:1fr}.shortcut-only{display:none}}
+:root {
+  color-scheme: dark;
+  --bg: #080a10;
+  --panel: #0d111a;
+  --panel2: #121824;
+  --panel3: #182131;
+  --border: #263247;
+  --text: #eef2ff;
+  --muted: #8e9bb0;
+  --accent: #7c8cff;
+  --accent2: #51d6c7;
+  --danger: #fb7185;
+  --warning: #fbbf24;
+  --success: #86efac;
+  --line: #1b2535;
+  --shadow: 0 20px 60px rgba(0,0,0,.35);
+  --header: 68px;
+  --transport: 116px;
+  --explorer: 238px;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5f9;
+  --panel: #fff;
+  --panel2: #f8fafc;
+  --panel3: #edf2f7;
+  --border: #d8e0ec;
+  --text: #152033;
+  --muted: #66758c;
+  --line: #edf1f6;
+  --shadow: 0 18px 48px rgba(31,41,55,.12);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 15% -20%, rgba(124,140,255,.16), transparent 35%), var(--bg);
+}
+button, input, select { font: inherit; }
+button { color: inherit; }
+.app-header {
+  position: fixed; z-index: 30; inset: 0 0 auto; height: var(--header);
+  display: flex; align-items: center; gap: 14px; padding: 0 18px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(18px);
+}
+.logo {
+  width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+  background: linear-gradient(145deg, rgba(124,140,255,.28), rgba(81,214,199,.1));
+  border: 1px solid rgba(124,140,255,.38); font-weight: 900;
+}
+.brand { min-width: 0; flex: 1; }
+.brand h1 { font-size: 15px; margin: 0; }
+.crash {
+  margin-top: 4px; color: var(--danger);
+  font: 12px ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.header-actions { display: flex; align-items: center; gap: 7px; }
+.btn, .seg button {
+  height: 36px; padding: 0 11px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--panel2); color: var(--muted); cursor: pointer;
+  font-size: 12px; font-weight: 700;
+}
+.btn:hover, .seg button:hover { color: var(--text); background: var(--panel3); }
+.btn.success { color: var(--success); }
+.seg { height: 38px; display: flex; padding: 3px; border: 1px solid var(--border); border-radius: 11px; background: var(--panel); }
+.seg button { height: 30px; border: 0; background: transparent; }
+.seg button.active { color: var(--text); background: var(--panel3); }
+#languageToggle { width: 72px; }
+.workspace {
+  position: fixed; inset: var(--header) 0 var(--transport);
+  display: grid; grid-template-columns: var(--explorer) minmax(0, 1.55fr) minmax(350px, .85fr);
+  gap: 10px; padding: 10px; overflow: hidden;
+}
+.panel {
+  min-width: 0; min-height: 0; overflow: hidden;
+  border: 1px solid var(--border); border-radius: 14px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent); box-shadow: var(--shadow);
+}
+.panel-head {
+  height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 0 13px; border-bottom: 1px solid var(--border); background: var(--panel2);
+}
+.panel-title { font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.panel-actions { display: flex; align-items: center; gap: 6px; }
+.mini-btn {
+  height: 29px; padding: 0 9px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel); color: var(--muted); cursor: pointer; font-size: 11px;
+}
+.mini-btn:hover { color: var(--text); background: var(--panel3); }
+.file-name {
+  min-width: 0; max-width: 72%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.explorer-body { height: calc(100% - 46px); overflow: auto; padding: 8px 6px 20px; }
+.tree-group { margin-left: 8px; }
+.tree-folder { margin: 1px 0; }
+.tree-folder > summary {
+  min-height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 6px;
+  border-radius: 7px; color: var(--muted); cursor: pointer; list-style: none;
+  font: 11px ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.tree-folder > summary::-webkit-details-marker { display: none; }
+.tree-folder > summary::before { content: "▾"; width: 12px; color: #64748b; }
+.tree-folder:not([open]) > summary::before { content: "▸"; }
+.tree-folder > summary:hover { color: var(--text); background: var(--panel3); }
+.file-item {
+  width: 100%; min-height: 30px; display: grid; grid-template-columns: 17px minmax(0,1fr) auto;
+  align-items: center; gap: 5px; padding: 0 7px; border: 0; border-radius: 7px;
+  background: transparent; color: var(--muted); cursor: pointer; text-align: left;
+  font: 11px ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.file-item:hover { color: var(--text); background: var(--panel3); }
+.file-item.active { color: var(--text); background: rgba(124,140,255,.16); }
+.file-icon { color: var(--accent2); }
+.file-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-count {
+  min-width: 22px; padding: 1px 5px; border-radius: 999px; text-align: center;
+  background: var(--panel3); color: var(--muted); font: 9px ui-monospace, monospace;
+}
+.code-panel { position: relative; }
+.source-search {
+  position: absolute; z-index: 8; top: 52px; right: 14px; width: min(430px, calc(100% - 28px));
+  display: none; align-items: center; gap: 6px; padding: 7px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--panel2); box-shadow: var(--shadow);
+}
+.source-search.open { display: flex; }
+.source-search input {
+  min-width: 0; flex: 1; height: 31px; padding: 0 9px;
+  border: 1px solid var(--border); border-radius: 7px; outline: none;
+  background: var(--panel); color: var(--text); font: 12px ui-monospace, monospace;
+}
+.source-search input:focus { border-color: var(--accent); }
+.search-counter { min-width: 48px; color: var(--muted); text-align: center; font: 10px ui-monospace, monospace; }
+.code-scroll { height: calc(100% - 46px); overflow: auto; scrollbar-gutter: stable; }
+.code-line {
+  display: grid; grid-template-columns: 34px 50px minmax(0,1fr); min-height: 24px;
+  border-left: 3px solid transparent; font: 13px/24px ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.code-line:hover { background: rgba(124,140,255,.05); }
+.code-line.active { background: rgba(124,140,255,.14); border-left-color: var(--accent); }
+.code-line.crash-line { box-shadow: inset 0 0 0 1px rgba(251,113,133,.35); }
+.code-line.origin-line:not(.active) { background: rgba(251,191,36,.08); border-left-color: var(--warning); }
+.code-line.search-line:not(.active) { background: rgba(251,191,36,.05); }
+.arrow { text-align: center; color: transparent; }
+.active .arrow { color: var(--accent2); }
+.line-no { padding-right: 10px; text-align: right; color: #58667c; user-select: none; }
+.code { white-space: pre; padding-right: 20px; }
+mark.search-match { padding: 0 1px; border-radius: 2px; background: rgba(251,191,36,.5); color: inherit; }
+mark.search-match.current { outline: 1px solid var(--warning); background: rgba(251,191,36,.78); }
+.kw { color: #c792ea; } .str { color: #c3e88d; } .num { color: #f78c6c; }
+.com { color: #637777; font-style: italic; } .fn { color: #82aaff; }
+.right { display: grid; grid-template-rows: minmax(180px,.72fr) minmax(230px,1fr); gap: 10px; min-height: 0; }
+.event-card { height: calc(100% - 46px); padding: 14px; overflow: auto; }
+.event-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.metric { padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel2); }
+.metric label { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+.metric b { display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px ui-monospace, monospace; }
+.origin { margin-top: 10px; padding: 11px; border: 1px solid rgba(251,191,36,.25); border-radius: 11px; background: rgba(251,191,36,.07); }
+.origin h3 { margin: 0 0 6px; color: var(--warning); font-size: 11px; text-transform: uppercase; }
+.origin p { margin: 0 0 9px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; }
+.tab { height: 30px; padding: 0 9px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.tab.active { color: var(--text); background: var(--panel3); }
+.tab-body { height: calc(100% - 46px); padding: 10px; overflow: auto; }
+.variable { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.variable:last-child { border-bottom: 0; }
+.var-top { display: flex; justify-content: space-between; gap: 10px; }
+.var-name { color: var(--accent2); font: 12px ui-monospace, monospace; }
+.var-type { color: var(--muted); font-size: 10px; }
+.var-value { margin-top: 5px; white-space: pre-wrap; word-break: break-word; font: 12px/1.5 ui-monospace, monospace; }
+.variable.changed { border-radius: 8px; background: rgba(124,140,255,.07); }
+.change { padding: 9px; border-bottom: 1px solid var(--line); font: 12px ui-monospace, monospace; }
+.before { color: var(--danger); } .after { color: var(--success); }
+.frame { display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.frame:hover { background: var(--panel3); }
+.frame-depth { width: 22px; color: var(--muted); font: 10px monospace; }
+.frame-main { min-width: 0; }
+.frame-fn { color: var(--accent2); font: 12px monospace; }
+.frame-loc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font: 10px monospace; }
+.exception-chain { display: flex; flex-direction: column; gap: 8px; }
+.exception-node { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel2); color: var(--text); cursor: pointer; text-align: left; }
+.exception-node:hover, .exception-node.selected { border-color: var(--accent); background: rgba(124,140,255,.1); }
+.exception-role { margin-bottom: 4px; color: var(--muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.exception-type { color: var(--danger); font: 12px ui-monospace, monospace; }
+.exception-message { margin-top: 4px; color: var(--text); font-size: 11px; line-height: 1.45; }
+.exception-location { margin-top: 5px; color: var(--muted); font: 10px ui-monospace, monospace; }
+.exception-relation { margin-left: 14px; color: var(--muted); font-size: 10px; }
+.exception-notes { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line); color: var(--warning); font-size: 10px; line-height: 1.45; }
+.chain-warning { padding: 8px; border: 1px solid rgba(251,191,36,.3); border-radius: 8px; color: var(--warning); font-size: 10px; }
+.transport {
+  position: fixed; z-index: 20; inset: auto 0 0; height: var(--transport);
+  padding: 10px 18px; border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(18px);
+}
+.transport-top { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 14px; }
+.controls { display: flex; gap: 6px; }
+.icon-btn { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel2); color: var(--text); cursor: pointer; }
+.icon-btn:hover { background: var(--panel3); }
+.timeline-wrap { min-width: 0; }
+.timeline-meta { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--muted); font: 10px ui-monospace, monospace; }
+input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+.speed { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+.speed select { height: 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel2); color: var(--text); }
+.stats { margin-top: 9px; display: flex; align-items: center; gap: 14px; overflow: hidden; color: var(--muted); font: 10px ui-monospace, monospace; white-space: nowrap; }
+.stats span { overflow: hidden; text-overflow: ellipsis; }
+.toast { position: fixed; z-index: 60; right: 18px; bottom: 132px; padding: 10px 13px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel3); box-shadow: var(--shadow); font-size: 12px; opacity: 0; transform: translateY(6px); pointer-events: none; transition: .18s; }
+.toast.show { opacity: 1; transform: none; }
+.overlay { position: fixed; z-index: 80; inset: 0; display: none; align-items: flex-start; justify-content: center; padding-top: 11vh; background: rgba(3,5,10,.62); backdrop-filter: blur(7px); }
+.overlay.open { display: flex; }
+.palette { width: min(680px, calc(100% - 30px)); max-height: 72vh; overflow: hidden; border: 1px solid var(--border); border-radius: 15px; background: var(--panel); box-shadow: 0 26px 90px rgba(0,0,0,.55); }
+.palette-head { display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid var(--border); }
+.palette-head input { min-width: 0; flex: 1; height: 39px; padding: 0 11px; border: 1px solid var(--border); border-radius: 9px; outline: none; background: var(--panel2); color: var(--text); font: 13px ui-monospace, monospace; }
+.palette-head input:focus { border-color: var(--accent); }
+.key-hint { padding: 3px 6px; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font: 9px ui-monospace, monospace; }
+.palette-results { max-height: calc(72vh - 60px); overflow: auto; padding: 7px; }
+.palette-result { width: 100%; display: grid; grid-template-columns: 20px minmax(0,1fr) auto; align-items: center; gap: 8px; padding: 9px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+.palette-result:hover, .palette-result.selected { background: var(--panel3); }
+.result-main { min-width: 0; }
+.result-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px ui-monospace, monospace; }
+.result-subtitle { margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 10px; }
+.result-kind { color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.empty-state { padding: 18px; color: var(--muted); text-align: center; font-size: 12px; }
+.report-error { position: fixed; z-index: 200; inset: 0; display: none; place-items: center; padding: 28px; background: #080a10; color: #eef2ff; }
+.report-error-card { width: min(720px,100%); padding: 24px; border: 1px solid #3b465b; border-radius: 16px; background: #111827; box-shadow: var(--shadow); }
+.report-error h1 { margin: 0 0 10px; color: #fb7185; font-size: 20px; }
+.report-error p { margin: 7px 0; color: #cbd5e1; line-height: 1.6; }
+.report-error pre { max-height: 180px; overflow: auto; padding: 12px; border-radius: 10px; background: #070b12; color: #94a3b8; white-space: pre-wrap; }
+@media (max-width: 1080px) {
+  :root { --explorer: 205px; }
+  .workspace { grid-template-columns: var(--explorer) minmax(0,1fr); }
+  .right { display: none; }
+}
+@media (max-width: 760px) {
+  :root { --header: 112px; --transport: 126px; }
+  .app-header { height: var(--header); align-items: flex-start; padding-top: 12px; flex-wrap: wrap; }
+  .brand { width: calc(100% - 56px); }
+  .header-actions { width: 100%; overflow-x: auto; padding-bottom: 8px; }
+  .workspace { grid-template-columns: 1fr; }
+  .explorer-panel { display: none; }
+  .shortcut-only { display: none; }
+}
 </style>
 </head>
 <body>
 <header class="app-header">
   <div class="logo">R</div>
-  <div class="brand"><h1 id="reportTitle">RewindPy</h1><div class="crash" id="crashText"></div></div>
+  <div class="brand"><h1 id="reportTitle">RewindPy</h1><div id="crashText" class="crash"></div></div>
   <div class="header-actions">
     <div class="seg"><button id="sliceView"></button><button id="allView"></button></div>
-    <button class="btn" id="openSource"></button>
-    <button class="btn" id="copyDiagnostic"></button>
-    <button class="btn" id="copyLocation"></button>
-    <button class="btn" id="themeToggle">☀</button>
-    <button class="btn" id="languageToggle">中文</button>
+    <button id="quickOpenButton" class="btn" title="Ctrl+P">⌘P</button>
+    <button id="globalSearchButton" class="btn" title="Ctrl+Shift+F">⌕</button>
+    <button id="openSource" class="btn shortcut-only"></button>
+    <button id="copyDiagnostic" class="btn shortcut-only"></button>
+    <button id="copyLocation" class="btn shortcut-only"></button>
+    <button id="themeToggle" class="btn" aria-label="Theme">☀</button>
+    <button id="languageToggle" class="btn"></button>
   </div>
 </header>
 <main class="workspace">
-  <section class="panel">
-    <div class="panel-head"><div class="panel-title" id="sourceTitle"></div><div class="file-name" id="fileName"></div></div>
+  <aside class="panel explorer-panel" id="fileExplorer">
+    <div class="panel-head"><span class="panel-title" id="filesTitle"></span><span id="fileTotal" class="file-count"></span></div>
+    <div class="explorer-body" id="fileTree"></div>
+  </aside>
+  <section class="panel code-panel">
+    <div class="panel-head">
+      <span class="panel-title" id="sourceTitle"></span>
+      <div class="panel-actions"><span class="file-name" id="fileName"></span><button class="mini-btn" id="sourceSearchButton" title="Ctrl+F">⌕</button></div>
+    </div>
+    <div class="source-search" id="sourceSearch">
+      <input id="sourceSearchInput" autocomplete="off" spellcheck="false" />
+      <span id="sourceSearchCount" class="search-counter">0 / 0</span>
+      <button class="mini-btn" id="sourceSearchPrev">↑</button>
+      <button class="mini-btn" id="sourceSearchNext">↓</button>
+      <button class="mini-btn" id="sourceSearchClose">×</button>
+    </div>
     <div class="code-scroll" id="codeScroll"><div id="code"></div></div>
   </section>
   <section class="right">
-    <section class="panel">
-      <div class="panel-head"><div class="panel-title" id="currentEventTitle"></div><div class="file-name" id="eventBadge"></div></div>
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title" id="currentEventTitle"></span><span class="file-name" id="eventBadge"></span></div>
       <div class="event-card">
         <div class="event-grid">
           <div class="metric"><label id="functionLabel"></label><b id="functionValue"></b></div>
@@ -41,62 +296,264 @@ html[data-theme="light"]{color-scheme:light;--bg:#f3f5f9;--panel:#fff;--panel2:#
           <div class="metric"><label id="eventLabel"></label><b id="eventValue"></b></div>
           <div class="metric"><label id="depthLabel"></label><b id="depthValue"></b></div>
         </div>
-        <div class="origin" id="originCard"><h3 id="originTitle"></h3><p id="originText"></p><button class="btn" id="jumpOrigin"></button></div>
+        <div class="origin" id="originCard"><h3 id="originTitle"></h3><p id="originText"></p><button id="jumpOrigin" class="btn"></button></div>
       </div>
-    </section>
-    <section class="panel">
-      <div class="panel-head"><div class="tabs"><button class="tab active" data-tab="variables" id="variablesTab"></button><button class="tab" data-tab="changes" id="changesTab"></button><button class="tab" data-tab="stack" id="stackTab"></button></div><div class="file-name shortcut-only" id="shortcuts"></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="tabs">
+        <button class="tab active" id="variablesTab" data-tab="variables"></button>
+        <button class="tab" id="changesTab" data-tab="changes"></button>
+        <button class="tab" id="stackTab" data-tab="stack"></button>
+        <button class="tab" id="exceptionsTab" data-tab="exceptions"></button>
+      </div></div>
       <div class="tab-body" id="tabBody"></div>
-    </section>
+    </div>
   </section>
 </main>
 <footer class="transport">
   <div class="transport-top">
-    <div class="controls"><button class="icon-btn" id="prev" title="Previous">◀</button><button class="icon-btn" id="play" title="Play">▶</button><button class="icon-btn" id="next" title="Next">▶|</button></div>
-    <div class="timeline-wrap"><div class="timeline-meta"><span id="timelineTitle"></span><span id="stepText"></span></div><input id="slider" type="range" min="0" max="0" value="0" /></div>
-    <div class="speed"><span id="speedLabel"></span><select id="speed"><option value="900">0.5×</option><option value="450" selected>1×</option><option value="220">2×</option><option value="90">4×</option></select></div>
+    <div class="controls"><button id="prev" class="icon-btn">◀</button><button id="play" class="icon-btn">▶</button><button id="next" class="icon-btn">▶</button></div>
+    <div class="timeline-wrap"><div class="timeline-meta"><span id="timelineTitle"></span><span id="stepText"></span></div><input id="slider" type="range" min="0" value="0" /></div>
+    <label class="speed"><span id="speedLabel"></span><select id="speed"><option value="900">0.5×</option><option value="450" selected>1×</option><option value="220">2×</option><option value="110">4×</option></select></label>
   </div>
-  <div class="stats" id="stats"></div>
+  <div class="stats" id="stats"></div><div class="stats" id="shortcuts"></div>
 </footer>
 <div class="toast" id="toast"></div>
-<script id="rewind-data" type="application/json">{"version": 6, "language": "en", "project_root": "/tmp/rewindpy-demo-cjgz1k1d", "target": "/tmp/rewindpy-demo-cjgz1k1d/none_origin.py", "arguments": [], "crash": {"exception_type": "AttributeError", "message": "'NoneType' object has no attribute 'get'", "file": "none_origin.py", "line": 7, "function": "render_profile", "traceback": [{"file": "/home/liruixuan/rewindpy/src/rewindpy/runner.py", "line": 46, "function": "run_target", "source": "runpy.run_path(str(target), run_name=\"__main__\")", "project_file": false}, {"file": "/home/liruixuan/rewindpy/<frozen runpy>", "line": 286, "function": "run_path", "source": "", "project_file": false}, {"file": "/home/liruixuan/rewindpy/<frozen runpy>", "line": 98, "function": "_run_module_code", "source": "", "project_file": false}, {"file": "/home/liruixuan/rewindpy/<frozen runpy>", "line": 88, "function": "_run_code", "source": "", "project_file": false}, {"file": "none_origin.py", "line": 11, "function": "<module>", "source": "print(render_profile(current_user))", "project_file": true}, {"file": "none_origin.py", "line": 7, "function": "render_profile", "source": "return f\"Welcome, {user.get('name').upper()}\"", "project_file": true}]}, "analysis": {"kind": "none-value-origin", "title": "None value traced", "summary": "'user' received None through 'current_user'. find_user() returned None 4 steps before the crash.", "title_i18n": {"en": "None value traced", "zh": "已追踪 None 来源"}, "summary_i18n": {"en": "'user' received None through 'current_user'. find_user() returned None 4 steps before the crash.", "zh": "'user' 通过 'current_user' 接收到 None。find_user() 在崩溃前 4 步返回了 None。"}, "attribute": "get", "variable": "user", "upstream_variable": "current_user", "origin_step": 8, "crash_step": 12, "steps_before_crash": 4, "file": "none_origin.py", "line": 3, "function": "find_user", "producer_function": "find_user", "reason": "returned-none", "confidence": 0.9}, "crash_slice": {"steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14], "total_events": 15, "shown_events": 13, "omitted_events": 2, "context_steps": 30, "anchor_step": 12}, "events": [{"step": 1, "event": "call", "file": "none_origin.py", "line": 0, "function": "<module>", "depth": 8, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 2, "event": "line", "file": "none_origin.py", "line": 1, "function": "<module>", "depth": 8, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 3, "event": "line", "file": "none_origin.py", "line": 6, "function": "<module>", "depth": 8, "locals": {"find_user": "<function find_user at 0x7f9dea9832e0>"}, "changes": {"find_user": {"before": "<not set>", "after": "<function find_user at 0x7f9dea9832e0>"}}, "change_line": 1, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 4, "event": "line", "file": "none_origin.py", "line": 10, "function": "<module>", "depth": 8, "locals": {"find_user": "<function find_user at 0x7f9dea9832e0>", "render_profile": "<function render_profile at 0x7f9dea983380>"}, "changes": {"render_profile": {"before": "<not set>", "after": "<function render_profile at 0x7f9dea983380>"}}, "change_line": 6, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 5, "event": "call", "file": "none_origin.py", "line": 1, "function": "find_user", "depth": 9, "locals": {"user_id": "999"}, "changes": {"user_id": {"before": "<not set>", "after": "999"}}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 6, "event": "line", "file": "none_origin.py", "line": 2, "function": "find_user", "depth": 9, "locals": {"user_id": "999"}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 7, "event": "line", "file": "none_origin.py", "line": 3, "function": "find_user", "depth": 9, "locals": {"user_id": "999", "users": {"100": {"name": "Alice"}}}, "changes": {"users": {"before": "<not set>", "after": {"100": {"name": "Alice"}}}}, "change_line": 2, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 8, "event": "return", "file": "none_origin.py", "line": 3, "function": "find_user", "depth": 9, "locals": {"user_id": "999", "users": {"100": {"name": "Alice"}}}, "changes": {}, "change_line": 3, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 9, "event": "line", "file": "none_origin.py", "line": 11, "function": "<module>", "depth": 8, "locals": {"current_user": null, "find_user": "<function find_user at 0x7f9dea9832e0>", "render_profile": "<function render_profile at 0x7f9dea983380>"}, "changes": {"current_user": {"before": "<not set>", "after": null}}, "change_line": 10, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 10, "event": "call", "file": "none_origin.py", "line": 6, "function": "render_profile", "depth": 9, "locals": {"user": null}, "changes": {"user": {"before": "<not set>", "after": null}}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 11, "event": "line", "file": "none_origin.py", "line": 7, "function": "render_profile", "depth": 9, "locals": {"user": null}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 12, "event": "exception", "file": "none_origin.py", "line": 7, "function": "render_profile", "depth": 9, "locals": {"user": null}, "changes": {}, "change_line": 7, "return_value": null, "exception_type": "AttributeError", "exception_message": "'NoneType' object has no attribute 'get'"}, {"step": 13, "event": "return", "file": "none_origin.py", "line": 7, "function": "render_profile", "depth": 9, "locals": {"user": null}, "changes": {}, "change_line": 7, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 14, "event": "exception", "file": "none_origin.py", "line": 11, "function": "<module>", "depth": 8, "locals": {"current_user": null, "find_user": "<function find_user at 0x7f9dea9832e0>", "render_profile": "<function render_profile at 0x7f9dea983380>"}, "changes": {}, "change_line": 11, "return_value": null, "exception_type": "AttributeError", "exception_message": "'NoneType' object has no attribute 'get'"}, {"step": 15, "event": "return", "file": "none_origin.py", "line": 11, "function": "<module>", "depth": 8, "locals": {"current_user": null, "find_user": "<function find_user at 0x7f9dea9832e0>", "render_profile": "<function render_profile at 0x7f9dea983380>"}, "changes": {}, "change_line": 11, "return_value": null, "exception_type": null, "exception_message": null}], "trace_stats": {"max_events": 5000, "total_events": 15, "retained_events": 15, "discarded_events": 0, "traced_files": 1, "excluded_events": 0, "duration_seconds": 0.00525, "report_events": 15, "compressed_events": 0, "report_trimmed_events": 0, "report_size_bytes": 7433}, "sources": {"none_origin.py": ["def find_user(user_id):", "    users = {\"100\": {\"name\": \"Alice\"}}", "    return users.get(user_id)", "", "", "def render_profile(user):", "    return f\"Welcome, {user.get('name').upper()}\"", "", "", "current_user = find_user(\"999\")", "print(render_profile(current_user))"]}, "translations": {"en": {"report_title": "RewindPy crash report", "crash_slice": "Crash Slice", "all_events": "All Events", "source": "Source", "variables": "Variables", "call_stack": "Call stack", "changes": "Changes", "origin": "Likely origin", "no_origin": "No earlier value origin was identified.", "no_source": "Source unavailable", "no_variables": "No local variables captured", "no_changes": "No variable changes on this step", "play": "Play", "pause": "Pause", "previous": "Previous", "next": "Next", "open_source": "Open source", "copy_diagnostic": "Copy diagnostic", "copy_location": "Copy location", "copied": "Copied", "copy_failed": "Copy failed", "step": "Step", "of": "of", "events": "events", "retained": "retained", "discarded": "discarded", "compressed": "compressed", "trimmed": "trimmed", "files": "files", "trace_time": "trace time", "report_size": "report data", "repeat": "repeated", "times": "times", "jump_origin": "Jump to origin", "theme": "Theme", "speed": "Speed", "shortcuts": "←/J previous · →/K next · Space play · O open · C copy · L location", "timeline": "Execution timeline", "current_event": "Current event", "function": "Function", "location": "Location", "event": "Event", "depth": "Depth"}, "zh": {"report_title": "RewindPy 崩溃报告", "crash_slice": "崩溃切片", "all_events": "全部事件", "source": "源代码", "variables": "变量", "call_stack": "调用栈", "changes": "变量变化", "origin": "可能来源", "no_origin": "没有找到可信的更早数值来源。", "no_source": "无法获取源代码", "no_variables": "没有捕获到局部变量", "no_changes": "这一步没有变量变化", "play": "播放", "pause": "暂停", "previous": "上一步", "next": "下一步", "open_source": "打开源码", "copy_diagnostic": "复制诊断", "copy_location": "复制位置", "copied": "已复制", "copy_failed": "复制失败", "step": "步骤", "of": "/", "events": "个事件", "retained": "已保留", "discarded": "已丢弃", "compressed": "已压缩", "trimmed": "已裁剪", "files": "个文件", "trace_time": "追踪耗时", "report_size": "报告数据", "repeat": "重复", "times": "次", "jump_origin": "跳转到来源", "theme": "主题", "speed": "速度", "shortcuts": "←/J 上一步 · →/K 下一步 · 空格播放 · O 打开 · C 复制 · L 位置", "timeline": "执行时间线", "current_event": "当前事件", "function": "函数", "location": "位置", "event": "事件", "depth": "深度"}}}</script>
+<div class="overlay" id="quickOpen" role="dialog" aria-modal="true">
+  <div class="palette"><div class="palette-head"><input id="quickOpenInput" autocomplete="off" spellcheck="false" /><span class="key-hint">Ctrl+P</span><span class="key-hint">Esc</span></div><div class="palette-results" id="quickOpenResults"></div></div>
+</div>
+<div class="overlay" id="globalSearch" role="dialog" aria-modal="true">
+  <div class="palette"><div class="palette-head"><input id="globalSearchInput" autocomplete="off" spellcheck="false" /><span class="key-hint">Ctrl+Shift+F</span><span class="key-hint">Esc</span></div><div class="palette-results" id="globalSearchResults"></div></div>
+</div>
+<div class="report-error" id="reportError"><div class="report-error-card"><h1>Unable to open this RewindPy report</h1><p>This report is newer than this viewer, or its embedded data is damaged.</p><p>此报告需要更新版本的 RewindPy，或报告中的数据已经损坏。</p><pre id="reportErrorDetail"></pre></div></div>
+<script id="rewind-data" type="application/json">{"language": "en", "project_root": "/demo/rewindpy", "target": "/demo/rewindpy/app.py", "arguments": [], "crash": {"exception_type": "StartupError", "message": "application startup failed", "file": "service.py", "line": 13, "function": "start_application", "traceback": [{"file": "<runtime>/runner.py", "line": 51, "function": "run_target", "source": "runpy.run_path(str(target), run_name=\"__main__\")", "project_file": false}, {"file": "<runtime>/<frozen runpy>", "line": 286, "function": "run_path", "source": "", "project_file": false}, {"file": "<runtime>/<frozen runpy>", "line": 98, "function": "_run_module_code", "source": "", "project_file": false}, {"file": "<runtime>/<frozen runpy>", "line": 88, "function": "_run_code", "source": "", "project_file": false}, {"file": "app.py", "line": 4, "function": "<module>", "source": "start_application()", "project_file": true}, {"file": "service.py", "line": 13, "function": "start_application", "source": "raise StartupError(\"application startup failed\") from exc", "project_file": true}]}, "exception_chain": {"items": [{"index": 0, "exception_type": "StartupError", "exception_module": "service", "message": "application startup failed", "relation_to_next": "cause", "suppress_context": true, "file": "service.py", "line": 13, "function": "start_application", "traceback": [{"file": "<runtime>/runner.py", "line": 51, "function": "run_target", "source": "runpy.run_path(str(target), run_name=\"__main__\")", "project_file": false}, {"file": "<runtime>/<frozen runpy>", "line": 286, "function": "run_path", "source": "", "project_file": false}, {"file": "<runtime>/<frozen runpy>", "line": 98, "function": "_run_module_code", "source": "", "project_file": false}, {"file": "<runtime>/<frozen runpy>", "line": 88, "function": "_run_code", "source": "", "project_file": false}, {"file": "app.py", "line": 4, "function": "<module>", "source": "start_application()", "project_file": true}, {"file": "service.py", "line": 13, "function": "start_application", "source": "raise StartupError(\"application startup failed\") from exc", "project_file": true}], "notes": [], "event_step": 34}, {"index": 1, "exception_type": "ValueError", "exception_module": "builtins", "message": "configuration is not valid JSON", "relation_to_next": "cause", "suppress_context": true, "file": "config_loader.py", "line": 11, "function": "load_config", "traceback": [{"file": "service.py", "line": 10, "function": "start_application", "source": "config = load_config()", "project_file": true}, {"file": "config_loader.py", "line": 11, "function": "load_config", "source": "raise ValueError(\"configuration is not valid JSON\") from exc", "project_file": true}], "notes": [], "event_step": 29}, {"index": 2, "exception_type": "JSONDecodeError", "exception_module": "json.decoder", "message": "Expecting property name enclosed in double quotes: line 1 column 42 (char 41)", "relation_to_next": null, "suppress_context": false, "file": "config_loader.py", "line": 7, "function": "load_config", "traceback": [{"file": "config_loader.py", "line": 7, "function": "load_config", "source": "return json.loads(raw)", "project_file": true}, {"file": "<runtime>/__init__.py", "line": 346, "function": "loads", "source": "return _default_decoder.decode(s)", "project_file": false}, {"file": "<runtime>/decoder.py", "line": 337, "function": "decode", "source": "obj, end = self.raw_decode(s, idx=_w(s, 0).end())", "project_file": false}, {"file": "<runtime>/decoder.py", "line": 353, "function": "raw_decode", "source": "obj, end = self.scan_once(s, idx)", "project_file": false}], "notes": ["The multi-file demo intentionally uses malformed JSON."], "event_step": 24}], "truncated": false, "cycle_detected": false, "max_depth": 16}, "analysis": null, "crash_slice": {"steps": [1, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 36], "total_events": 37, "shown_events": 32, "omitted_events": 5, "context_steps": 30, "anchor_step": 34}, "events": [{"step": 1, "event": "call", "file": "app.py", "line": 0, "function": "<module>", "depth": 9, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 2, "event": "line", "file": "app.py", "line": 1, "function": "<module>", "depth": 9, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 3, "event": "call", "file": "service.py", "line": 0, "function": "<module>", "depth": 15, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 4, "event": "line", "file": "service.py", "line": 1, "function": "<module>", "depth": 15, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 5, "event": "call", "file": "config_loader.py", "line": 0, "function": "<module>", "depth": 21, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 6, "event": "line", "file": "config_loader.py", "line": 1, "function": "<module>", "depth": 21, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 7, "event": "line", "file": "config_loader.py", "line": 4, "function": "<module>", "depth": 21, "locals": {"json": "<module 'json' from '/usr/lib/python3.12/json/__init__.py'>"}, "changes": {"json": {"before": "<not set>", "after": "<module 'json' from '/usr/lib/python3.12/json/__init__.py'>"}}, "change_line": 1, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 8, "event": "return", "file": "config_loader.py", "line": 4, "function": "<module>", "depth": 21, "locals": {"json": "<module 'json' from '/usr/lib/python3.12/json/__init__.py'>", "load_config": "<function load_config at 0x…>"}, "changes": {"load_config": {"before": "<not set>", "after": "<function load_config at 0x…>"}}, "change_line": 4, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 9, "event": "line", "file": "service.py", "line": 4, "function": "<module>", "depth": 15, "locals": {"load_config": "<function load_config at 0x…>"}, "changes": {"load_config": {"before": "<not set>", "after": "<function load_config at 0x…>"}}, "change_line": 1, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 10, "event": "call", "file": "service.py", "line": 4, "function": "StartupError", "depth": 16, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 11, "event": "line", "file": "service.py", "line": 4, "function": "StartupError", "depth": 16, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 12, "event": "line", "file": "service.py", "line": 5, "function": "StartupError", "depth": 16, "locals": {}, "changes": {}, "change_line": 4, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 13, "event": "return", "file": "service.py", "line": 5, "function": "StartupError", "depth": 16, "locals": {}, "changes": {}, "change_line": 5, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 14, "event": "line", "file": "service.py", "line": 8, "function": "<module>", "depth": 15, "locals": {"StartupError": "<class 'service.StartupError'>", "load_config": "<function load_config at 0x…>"}, "changes": {"StartupError": {"before": "<not set>", "after": "<class 'service.StartupError'>"}}, "change_line": 4, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 15, "event": "return", "file": "service.py", "line": 8, "function": "<module>", "depth": 15, "locals": {"StartupError": "<class 'service.StartupError'>", "load_config": "<function load_config at 0x…>", "start_application": "<function start_application at 0x…>"}, "changes": {"start_application": {"before": "<not set>", "after": "<function start_application at 0x…>"}}, "change_line": 8, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 16, "event": "line", "file": "app.py", "line": 4, "function": "<module>", "depth": 9, "locals": {"start_application": "<function start_application at 0x…>"}, "changes": {"start_application": {"before": "<not set>", "after": "<function start_application at 0x…>"}}, "change_line": 1, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 17, "event": "call", "file": "service.py", "line": 8, "function": "start_application", "depth": 10, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 18, "event": "line", "file": "service.py", "line": 9, "function": "start_application", "depth": 10, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 19, "event": "line", "file": "service.py", "line": 10, "function": "start_application", "depth": 10, "locals": {}, "changes": {}, "change_line": 9, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 20, "event": "call", "file": "config_loader.py", "line": 4, "function": "load_config", "depth": 11, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 21, "event": "line", "file": "config_loader.py", "line": 5, "function": "load_config", "depth": 11, "locals": {}, "changes": {}, "change_line": null, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 22, "event": "line", "file": "config_loader.py", "line": 6, "function": "load_config", "depth": 11, "locals": {"raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {"raw": {"before": "<not set>", "after": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}}, "change_line": 5, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 23, "event": "line", "file": "config_loader.py", "line": 7, "function": "load_config", "depth": 11, "locals": {"raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {}, "change_line": 6, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 24, "event": "exception", "file": "config_loader.py", "line": 7, "function": "load_config", "depth": 11, "locals": {"raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {}, "change_line": 7, "return_value": null, "exception_type": "JSONDecodeError", "exception_message": "Expecting property name enclosed in double quotes: line 1 column 42 (char 41)"}, {"step": 25, "event": "line", "file": "config_loader.py", "line": 8, "function": "load_config", "depth": 11, "locals": {"raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {}, "change_line": 7, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 26, "event": "line", "file": "config_loader.py", "line": 9, "function": "load_config", "depth": 11, "locals": {"exc": "JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 42 (char 41)')", "raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {"exc": {"before": "<not set>", "after": "JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 42 (char 41)')"}}, "change_line": 8, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 27, "event": "line", "file": "config_loader.py", "line": 10, "function": "load_config", "depth": 11, "locals": {"exc": "JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 42 (char 41)')", "raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {}, "change_line": 9, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 28, "event": "line", "file": "config_loader.py", "line": 11, "function": "load_config", "depth": 11, "locals": {"exc": "JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 42 (char 41)')", "raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {}, "change_line": 10, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 29, "event": "exception", "file": "config_loader.py", "line": 11, "function": "load_config", "depth": 11, "locals": {"exc": "JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 42 (char 41)')", "raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {}, "change_line": 11, "return_value": null, "exception_type": "ValueError", "exception_message": "configuration is not valid JSON"}, {"step": 30, "event": "return", "file": "config_loader.py", "line": 11, "function": "load_config", "depth": 11, "locals": {"raw": "{\"database\": {\"url\": \"sqlite:///demo.db\",}}"}, "changes": {"exc": {"before": "JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 42 (char 41)')", "after": "<not set>"}}, "change_line": 11, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 31, "event": "exception", "file": "service.py", "line": 10, "function": "start_application", "depth": 10, "locals": {}, "changes": {}, "change_line": 10, "return_value": null, "exception_type": "ValueError", "exception_message": "configuration is not valid JSON"}, {"step": 32, "event": "line", "file": "service.py", "line": 12, "function": "start_application", "depth": 10, "locals": {}, "changes": {}, "change_line": 10, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 33, "event": "line", "file": "service.py", "line": 13, "function": "start_application", "depth": 10, "locals": {"exc": "ValueError('configuration is not valid JSON')"}, "changes": {"exc": {"before": "<not set>", "after": "ValueError('configuration is not valid JSON')"}}, "change_line": 12, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 34, "event": "exception", "file": "service.py", "line": 13, "function": "start_application", "depth": 10, "locals": {"exc": "ValueError('configuration is not valid JSON')"}, "changes": {}, "change_line": 13, "return_value": null, "exception_type": "StartupError", "exception_message": "application startup failed"}, {"step": 35, "event": "return", "file": "service.py", "line": 13, "function": "start_application", "depth": 10, "locals": {}, "changes": {"exc": {"before": "ValueError('configuration is not valid JSON')", "after": "<not set>"}}, "change_line": 13, "return_value": null, "exception_type": null, "exception_message": null}, {"step": 36, "event": "exception", "file": "app.py", "line": 4, "function": "<module>", "depth": 9, "locals": {"start_application": "<function start_application at 0x…>"}, "changes": {}, "change_line": 4, "return_value": null, "exception_type": "StartupError", "exception_message": "application startup failed"}, {"step": 37, "event": "return", "file": "app.py", "line": 4, "function": "<module>", "depth": 9, "locals": {"start_application": "<function start_application at 0x…>"}, "changes": {}, "change_line": 4, "return_value": null, "exception_type": null, "exception_message": null}], "trace_stats": {"max_events": 5000, "total_events": 37, "retained_events": 37, "discarded_events": 0, "traced_files": 3, "excluded_events": 0, "duration_seconds": 0.0, "report_events": 37, "compressed_events": 0, "report_trimmed_events": 0, "report_size_bytes": 0}, "sources": {"app.py": {"lines": ["from service import start_application", "", "", "start_application()"], "encoding": "utf-8"}, "config_loader.py": {"lines": ["import json", "", "", "def load_config():", "    raw = '{\"database\": {\"url\": \"sqlite:///demo.db\",}}'", "    try:", "        return json.loads(raw)", "    except json.JSONDecodeError as exc:", "        if hasattr(exc, \"add_note\"):", "            exc.add_note(\"The multi-file demo intentionally uses malformed JSON.\")", "        raise ValueError(\"configuration is not valid JSON\") from exc"], "encoding": "utf-8"}, "service.py": {"lines": ["from config_loader import load_config", "", "", "class StartupError(RuntimeError):", "    pass", "", "", "def start_application():", "    try:", "        config = load_config()", "        return config[\"database\"][\"url\"]", "    except ValueError as exc:", "        raise StartupError(\"application startup failed\") from exc"], "encoding": "utf-8"}}, "schema_version": 2, "rewindpy_version": "0.2.0", "integrity": {"status": "ok", "algorithm": "sha256", "digest": "520ce1ba883b4b73d7c2597502937ac8bb1d8048fbcd7e4fc2eaee9396e27747", "event_count": 37, "source_count": 3, "source_line_count": 28}, "translations": {"en": {"report_title": "RewindPy crash report", "crash_slice": "Crash Slice", "all_events": "All Events", "source": "Source", "file_explorer": "Files", "quick_open_placeholder": "Open file by name or path…", "source_search_placeholder": "Search current file…", "global_search_placeholder": "Search source, functions, variables, and exceptions…", "no_search_results": "No matching results", "variables": "Variables", "call_stack": "Call stack", "exception_chain": "Exceptions", "caused_by": "Caused by", "during_handling": "While handling", "root_exception": "Root cause", "outer_exception": "Outer exception", "chain_truncated": "Exception chain was truncated for safety.", "chain_cycle": "A cycle was detected in the exception chain.", "exception_notes": "Notes", "no_exception_chain": "No exception chain captured", "changes": "Changes", "origin": "Likely origin", "no_origin": "No earlier value origin was identified.", "no_source": "Source unavailable", "no_variables": "No local variables captured", "no_changes": "No variable changes on this step", "play": "Play", "pause": "Pause", "previous": "Previous", "next": "Next", "open_source": "Open source", "copy_diagnostic": "Copy diagnostic", "copy_location": "Copy location", "copied": "Copied", "copy_failed": "Copy failed", "step": "Step", "of": "of", "events": "events", "retained": "retained", "discarded": "discarded", "compressed": "compressed", "trimmed": "trimmed", "files": "files", "trace_time": "trace time", "report_size": "report data", "repeat": "repeated", "times": "times", "jump_origin": "Jump to origin", "theme": "Theme", "speed": "Speed", "shortcuts": "Ctrl+P files · Ctrl+F current file · Ctrl+Shift+F all files · ←/J previous · →/K next · Space play", "timeline": "Execution timeline", "current_event": "Current event", "function": "Function", "location": "Location", "event": "Event", "depth": "Depth"}, "zh": {"report_title": "RewindPy 崩溃报告", "crash_slice": "崩溃切片", "all_events": "全部事件", "source": "源代码", "file_explorer": "文件", "quick_open_placeholder": "按文件名或路径打开…", "source_search_placeholder": "搜索当前文件…", "global_search_placeholder": "搜索源码、函数、变量和异常…", "no_search_results": "没有匹配结果", "variables": "变量", "call_stack": "调用栈", "exception_chain": "异常链", "caused_by": "由此异常导致", "during_handling": "处理以下异常时发生", "root_exception": "根本异常", "outer_exception": "最外层异常", "chain_truncated": "异常链过长，已为安全起见截断。", "chain_cycle": "检测到异常链循环引用。", "exception_notes": "备注", "no_exception_chain": "没有捕获到异常链", "changes": "变量变化", "origin": "可能来源", "no_origin": "没有找到可信的更早数值来源。", "no_source": "无法获取源代码", "no_variables": "没有捕获到局部变量", "no_changes": "这一步没有变量变化", "play": "播放", "pause": "暂停", "previous": "上一步", "next": "下一步", "open_source": "打开源码", "copy_diagnostic": "复制诊断", "copy_location": "复制位置", "copied": "已复制", "copy_failed": "复制失败", "step": "步骤", "of": "/", "events": "个事件", "retained": "已保留", "discarded": "已丢弃", "compressed": "已压缩", "trimmed": "已裁剪", "files": "个文件", "trace_time": "追踪耗时", "report_size": "报告数据", "repeat": "重复", "times": "次", "jump_origin": "跳转到来源", "theme": "主题", "speed": "速度", "shortcuts": "Ctrl+P 文件 · Ctrl+F 当前文件 · Ctrl+Shift+F 全局搜索 · ←/J 上一步 · →/K 下一步 · 空格播放", "timeline": "执行时间线", "current_event": "当前事件", "function": "函数", "location": "位置", "event": "事件", "depth": "深度"}}}</script>
 <script>
-const payload=JSON.parse(document.getElementById('rewind-data').textContent);
-const translations=payload.translations;
-let language=payload.language==='zh'?'zh':'en';let mode='slice';let events=[];let index=0;let playing=false;let timer=null;let activeTab='variables';
-const $=id=>document.getElementById(id);const tr=k=>(translations[language]||translations.en)[k]||k;
-const allEvents=payload.events||[];const sliceSteps=new Set((payload.crash_slice&&payload.crash_slice.steps)||[]);
-function eventStepEnd(event){return event.step_end??event.step} // report guard compatibility
-function selectEvents(){if(mode==='all'||!sliceSteps.size)return allEvents;return allEvents.filter(e=>sliceSteps.has(e.step)||sliceSteps.has(eventStepEnd(e)))}
-function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function highlight(line){let s=escapeHtml(line);s=s.replace(/(#.*)$/g,'<span class="com">$1</span>');s=s.replace(/(&quot;.*?&quot;|&#39;.*?&#39;)/g,'<span class="str">$1</span>');s=s.replace(/\b(def|return|for|in|if|else|elif|class|import|from|as|try|except|raise|with|None|True|False|and|or|not)\b/g,'<span class="kw">$1</span>');s=s.replace(/\b(\d+(?:\.\d+)?)\b/g,'<span class="num">$1</span>');s=s.replace(/\b([A-Za-z_]\w*)(?=\()/g,'<span class="fn">$1</span>');return s}
-function current(){return events[index]||null}
-function sourceFor(file){const sources=payload.sources||{};const normalized=String(file??'').replaceAll('\\','/');return sources[file]??sources[normalized]??Object.entries(sources).find(([key])=>String(key).replaceAll('\\','/')===normalized)?.[1]??''}
-function sourceLines(source){if(Array.isArray(source))return source.map(line=>String(line??''));if(typeof source==='string')return source.split(/\r?\n/);if(source&&typeof source==='object'){if(Array.isArray(source.lines))return source.lines.map(line=>String(line??''));if(Array.isArray(source.source))return source.source.map(line=>String(line??''));if(typeof source.source==='string')return source.source.split(/\r?\n/);if(Array.isArray(source.content))return source.content.map(line=>String(line??''));if(typeof source.content==='string')return source.content.split(/\r?\n/);}return[]}
-function renderCode(event){const root=$('code');const source=sourceFor(event?.file);$('fileName').textContent=event?.file||'';if(!source){root.innerHTML=`<div style="padding:18px;color:var(--muted)">${tr('no_source')}</div>`;return}const lines=sourceLines(source);const crashLine=payload.crash?.line;const originLine=payload.analysis?.origin_line;root.innerHTML=lines.map((line,i)=>{const n=i+1;const cls=['code-line'];if(n===event.line)cls.push('active');if(n===crashLine&&event.file===payload.crash?.file)cls.push('crash-line');if(n===originLine&&event.file===payload.analysis?.origin_file)cls.push('origin-line');return `<div class="${cls.join(' ')}" data-line="${n}"><span class="arrow">▶</span><span class="line-no">${n}</span><span class="code">${highlight(line)}</span></div>`}).join('');requestAnimationFrame(()=>{const active=root.querySelector('.active');if(active){const scroller=$('codeScroll');const top=active.offsetTop-scroller.clientHeight/2;scroller.scrollTo({top:Math.max(0,top),behavior:'smooth'})}})}
-function valueType(v){if(v===null)return'NoneType';if(Array.isArray(v))return'list';return typeof v==='object'?(v.type||'object'):typeof v}
-function valueText(v){if(v&&typeof v==='object'&&'repr'in v)return v.repr;try{return typeof v==='string'?v:JSON.stringify(v,null,2)}catch{return String(v)}}
-function renderVariables(event){const locals=event?.locals||{};const changed=new Set(Object.keys(event?.changes||{}));const entries=Object.entries(locals);if(!entries.length)return `<div style="color:var(--muted);padding:8px">${tr('no_variables')}</div>`;return entries.map(([name,v])=>`<div class="variable ${changed.has(name)?'changed':''}"><div class="var-top"><span class="var-name">${escapeHtml(name)}</span><span class="var-type">${escapeHtml(valueType(v))}</span></div><div class="var-value">${escapeHtml(valueText(v))}</div></div>`).join('')}
-function renderChanges(event){const entries=Object.entries(event?.changes||{});if(!entries.length)return `<div style="color:var(--muted);padding:8px">${tr('no_changes')}</div>`;return entries.map(([name,d])=>`<div class="change"><b>${escapeHtml(name)}</b><div class="before">− ${escapeHtml(valueText(d.before))}</div><div class="after">+ ${escapeHtml(valueText(d.after))}</div></div>`).join('')}
-function stackAt(idx){const frames=[];for(let i=0;i<=idx;i++){const e=events[i];if(e.event==='call')frames.push(e);if(e.event==='return'&&frames.length)frames.pop()}const now=events[idx];if(now&&!frames.some(f=>f.function===now.function&&f.depth===now.depth))frames.push(now);return frames}
-function renderStack(){const frames=stackAt(index);return frames.slice().reverse().map(frame=>`<div class="frame" data-step="${frame.step}"><span class="frame-depth">${frame.depth}</span><div class="frame-main"><div class="frame-fn">${escapeHtml(frame.function)}()</div><div class="frame-loc">${escapeHtml(frame.file)}:${frame.line}</div></div></div>`).join('')}
-function renderTab(event){$('tabBody').innerHTML=activeTab==='variables'?renderVariables(event):activeTab==='changes'?renderChanges(event):renderStack();document.querySelectorAll('.frame').forEach(el=>el.onclick=()=>jumpStep(Number(el.dataset.step)))}
-function renderOrigin(){const a=payload.analysis;const card=$('originCard');if(!a){$('originText').textContent=tr('no_origin');$('jumpOrigin').style.display='none';return}card.style.display='block';$('originText').textContent=a.summary||a.reason||tr('no_origin');$('jumpOrigin').style.display=a.origin_step==null?'none':'inline-flex'}
-function render(){const event=current();if(!event)return;renderCode(event);renderTab(event);$('functionValue').textContent=event.function||'—';$('locationValue').textContent=`${event.file||'—'}:${event.line||'—'}`;$('eventValue').textContent=event.repeat_count?`${event.event} · ${tr('repeat')} ${event.repeat_count} ${tr('times')}`:event.event;$('depthValue').textContent=String(event.depth??0);$('eventBadge').textContent=`#${event.step}`;$('slider').value=String(index);$('stepText').textContent=`${tr('step')} ${index+1} ${tr('of')} ${events.length}`}
-function setMode(next,keepStep){const step=keepStep??current()?.step;mode=next;events=selectEvents();index=Math.max(0,events.findIndex(e=>e.step===step));if(index<0)index=events.length-1;$('slider').max=String(Math.max(0,events.length-1));$('sliceView').classList.toggle('active',mode==='slice');$('allView').classList.toggle('active',mode==='all');render()}
-function jumpStep(step){let found=events.findIndex(e=>e.step===step||eventStepEnd(e)===step);if(found<0&&mode==='slice'){setMode('all',step);found=events.findIndex(e=>e.step===step||eventStepEnd(e)===step)}if(found>=0){index=found;render()}}
-function move(delta){index=Math.min(events.length-1,Math.max(0,index+delta));render();if(index===events.length-1&&playing)togglePlay(false)}
-function togglePlay(force){playing=force??!playing;$('play').textContent=playing?'❚❚':'▶';clearInterval(timer);if(playing)timer=setInterval(()=>move(1),Number($('speed').value))}
-function sourceUri(){const e=current();if(!e)return'';let path=e.file||'';if(payload.project_root&&!/^(?:[A-Za-z]:[\\/]|\/)/.test(path))path=payload.project_root.replace(/[\\/]$/,'')+'/'+path;return `vscode://file/${encodeURI(path.replaceAll('\\','/'))}:${e.line||1}`}
+const CURRENT_REPORT_SCHEMA=2;
+function showReportError(error){document.getElementById('reportError').style.display='grid';document.getElementById('reportErrorDetail').textContent=String(error?.stack||error||'Unknown report error')}
+function normalizePayload(raw){
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new Error('report payload must be an object');
+  const schema=raw.schema_version==null?1:Number(raw.schema_version);
+  if(!Number.isInteger(schema)||schema<1)throw new Error('schema_version must be a positive integer');
+  if(schema>CURRENT_REPORT_SCHEMA)throw new Error(`unsupported report schema ${schema}; this viewer supports up to ${CURRENT_REPORT_SCHEMA}`);
+  const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
+  if(schema===CURRENT_REPORT_SCHEMA){
+    if(typeof raw.rewindpy_version!=='string'||!raw.rewindpy_version)throw new Error('rewindpy_version must be a non-empty string');
+    if(!Array.isArray(raw.events))throw new Error('events must be an array');
+    if(!object(raw.sources))throw new Error('sources must be an object');
+    if(!object(raw.crash))throw new Error('crash must be an object');
+    if(!object(raw.trace_stats))throw new Error('trace_stats must be an object');
+    if(!object(raw.exception_chain)||!Array.isArray(raw.exception_chain.items))throw new Error('exception_chain.items must be an array');
+  }
+  const crash=object(raw.crash)?raw.crash:{};
+  const fallback={index:0,exception_type:crash.exception_type||'Exception',exception_module:'builtins',message:crash.message||'',relation_to_next:null,suppress_context:false,file:crash.file??null,line:crash.line??null,function:crash.function??null,traceback:Array.isArray(crash.traceback)?crash.traceback:[],notes:[],event_step:null};
+  const chain=object(raw.exception_chain)?raw.exception_chain:{items:[fallback],truncated:false,cycle_detected:false,max_depth:16};
+  if(!Array.isArray(chain.items)||!chain.items.length)chain.items=[fallback];
+  return {...raw,schema_version:CURRENT_REPORT_SCHEMA,events:Array.isArray(raw.events)?raw.events:[],sources:object(raw.sources)?raw.sources:{},crash,exception_chain:chain,trace_stats:object(raw.trace_stats)?raw.trace_stats:{},crash_slice:object(raw.crash_slice)?raw.crash_slice:{steps:[]}};
+}
+try{
+const payload=normalizePayload(JSON.parse(document.getElementById('rewind-data').textContent));
+const $=id=>document.getElementById(id);
+let language=payload.language==='zh'?'zh':'en';
+const tr=key=>payload.translations?.[language]?.[key]??payload.translations?.en?.[key]??key;
+const normalizePath=value=>String(value??'').replaceAll('\\','/').replace(/^\.\//,'');
+const allEvents=Array.isArray(payload.events)?payload.events:[];
+const sliceSteps=new Set(payload.crash_slice?.steps||[]);
+const sourceMap=new Map(Object.entries(payload.sources||{}).map(([key,value])=>[normalizePath(key),value]));
+const sourceKeys=[...sourceMap.keys()].sort((a,b)=>a.localeCompare(b));
+const state={mode:sliceSteps.size?'slice':'all',events:[],index:0,activeFile:null,activeLine:null,activeTab:'variables',selectedException:0,playing:false,timer:null,sourceQuery:'',sourceMatches:[],sourceMatchIndex:0,quickResults:[],quickIndex:0,globalResults:[],globalIndex:0};
+function eventStepEnd(event){return Number(event&&event.step_end!=null?event.step_end:event?.step??0)}
+function selectEvents(){return state.mode==='slice'&&sliceSteps.size?allEvents.filter(event=>sliceSteps.has(event.step)||sliceSteps.has(eventStepEnd(event))||(event.source_steps||[]).some(step=>sliceSteps.has(step))):allEvents}
+function current(){return state.events[state.index]||state.events.at(-1)||allEvents.at(-1)||null}
+function sourceLines(source){
+  if(Array.isArray(source))return source.map(line=>String(line??''));
+  if(typeof source==='string')return source.split(/\r?\n/);
+  if(source&&typeof source==='object'){
+    for(const key of ['lines','source','content']){
+      const value=source[key];
+      if(Array.isArray(value))return value.map(line=>String(line??''));
+      if(typeof value==='string')return value.split(/\r?\n/);
+    }
+  }
+  return [];
+}
+function sourceFor(file){const normalized=normalizePath(file);return sourceMap.get(normalized)??sourceMap.get(sourceKeys.find(key=>key===normalized||key.endsWith('/'+normalized))??'')??null}
+function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]))}
+function escapeRegExp(value){return String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function valueText(value){if(value===undefined)return'undefined';try{return typeof value==='string'?value:JSON.stringify(value,null,2)}catch{return String(value)}}
+function valueType(value){if(value===null)return'null';if(Array.isArray(value))return'array';return typeof value}
+function highlightPython(text){
+  let html=escapeHtml(text);
+  const comments=[]; const strings=[];
+  html=html.replace(/(#.*)$/g,match=>`\u0000C${comments.push(match)-1}\u0000`);
+  html=html.replace(/(&quot;.*?&quot;|&#039;.*?&#039;)/g,match=>`\u0000S${strings.push(match)-1}\u0000`);
+  html=html.replace(/\b(def|class|return|if|else|elif|for|while|in|is|not|and|or|try|except|finally|raise|from|import|as|with|yield|lambda|pass|break|continue|True|False|None|async|await)\b/g,'<span class="kw">$1</span>');
+  html=html.replace(/\b(\d+(?:\.\d+)?)\b/g,'<span class="num">$1</span>');
+  html=html.replace(/\b([A-Za-z_]\w*)(?=\s*\()/g,'<span class="fn">$1</span>');
+  html=html.replace(/\u0000S(\d+)\u0000/g,(_,index)=>`<span class="str">${strings[Number(index)]}</span>`);
+  html=html.replace(/\u0000C(\d+)\u0000/g,(_,index)=>`<span class="com">${comments[Number(index)]}</span>`);
+  return html;
+}
+function highlightedLine(text,lineNumber){
+  const query=state.sourceQuery;
+  if(!query)return highlightPython(text);
+  const regex=new RegExp(escapeRegExp(query),'ig');
+  let cursor=0; let html=''; let match; let ordinal=0;
+  while((match=regex.exec(text))!==null){
+    html+=highlightPython(text.slice(cursor,match.index));
+    const globalIndex=state.sourceMatches.findIndex(item=>item.line===lineNumber&&item.ordinal===ordinal);
+    const currentMatch=globalIndex===state.sourceMatchIndex?' current':'';
+    html+=`<mark class="search-match${currentMatch}">${escapeHtml(match[0])}</mark>`;
+    cursor=match.index+match[0].length; ordinal+=1;
+    if(match[0].length===0)regex.lastIndex+=1;
+  }
+  return html+highlightPython(text.slice(cursor));
+}
+function eventCounts(){const counts=new Map(sourceKeys.map(file=>[file,0]));for(const event of allEvents){const file=normalizePath(event.file);counts.set(file,(counts.get(file)||0)+1)}return counts}
+function buildFileTree(){
+  const root={folders:new Map(),files:[]};
+  const counts=eventCounts();
+  for(const file of sourceKeys){
+    const parts=file.split('/').filter(Boolean); let node=root;
+    parts.slice(0,-1).forEach(part=>{if(!node.folders.has(part))node.folders.set(part,{folders:new Map(),files:[]});node=node.folders.get(part)});
+    node.files.push({name:parts.at(-1)||file,path:file,count:counts.get(file)||0});
+  }
+  const renderNode=(node,depth=0)=>{
+    const folders=[...node.folders.entries()].sort(([a],[b])=>a.localeCompare(b)).map(([name,child])=>`<details class="tree-folder" open><summary>${escapeHtml(name)}</summary><div class="tree-group">${renderNode(child,depth+1)}</div></details>`).join('');
+    const files=node.files.sort((a,b)=>a.name.localeCompare(b.name)).map(file=>`<button class="file-item ${normalizePath(state.activeFile)===file.path?'active':''}" data-file="${escapeHtml(file.path)}" title="${escapeHtml(file.path)}"><span class="file-icon">◇</span><span class="file-label">${escapeHtml(file.name)}</span><span class="file-count">${file.count}</span></button>`).join('');
+    return folders+files;
+  };
+  $('fileTree').innerHTML=sourceKeys.length?renderNode(root):`<div class="empty-state">${escapeHtml(tr('no_source'))}</div>`;
+  $('fileTotal').textContent=String(sourceKeys.length);
+  document.querySelectorAll('.file-item').forEach(button=>button.onclick=()=>openFile(button.dataset.file));
+}
+function nearestEventIndexForFile(file,line=null){
+  const normalized=normalizePath(file); const currentStep=Number(current()?.step??0); let best=-1; let score=Infinity;
+  state.events.forEach((event,index)=>{if(normalizePath(event.file)!==normalized)return;const lineScore=line==null?0:Math.abs(Number(event.line??0)-Number(line));const stepScore=Math.abs(Number(event.step??0)-currentStep)/100000;const next=lineScore+stepScore;if(next<score){score=next;best=index}});
+  return best;
+}
+function openFile(file,line=null){
+  const normalized=normalizePath(file); let found=nearestEventIndexForFile(normalized,line);
+  if(found<0&&state.mode==='slice'){setMode('all');found=nearestEventIndexForFile(normalized,line)}
+  if(found>=0){state.index=found;render();return}
+  state.activeFile=normalized;state.activeLine=line||1;renderCode(null);buildFileTree();
+}
+function updateSourceMatches(lines){
+  const previous=state.sourceMatches[state.sourceMatchIndex]||null;
+  const requestedIndex=state.sourceMatchIndex;
+  const matches=[];
+  const query=state.sourceQuery;
+  if(query){const regex=new RegExp(escapeRegExp(query),'ig');lines.forEach((line,index)=>{let match;let ordinal=0;while((match=regex.exec(line))!==null){matches.push({line:index+1,ordinal});ordinal+=1;if(match[0].length===0)regex.lastIndex+=1}})}
+  state.sourceMatches=matches;
+  const previousIndex=previous?matches.findIndex(item=>item.line===previous.line&&item.ordinal===previous.ordinal):-1;
+  state.sourceMatchIndex=previousIndex>=0?previousIndex:Math.min(requestedIndex,Math.max(0,matches.length-1));
+  updateSourceSearchCount();
+}
+function updateSourceSearchCount(){const total=state.sourceMatches.length;$('sourceSearchCount').textContent=total?`${state.sourceMatchIndex+1} / ${total}`:'0 / 0'}
+function scrollToLine(line,behavior='auto'){const element=document.querySelector(`.code-line[data-line="${Number(line)}"]`);if(!element)return;const top=element.offsetTop-$('codeScroll').clientHeight/2+element.clientHeight/2;$('codeScroll').scrollTo({top:Math.max(0,top),behavior})}
+function renderCode(event){
+  if(event){state.activeFile=normalizePath(event.file);state.activeLine=Number(event.line)||1}
+  const source=sourceFor(state.activeFile);const lines=sourceLines(source);
+  updateSourceMatches(lines);
+  const crashFile=normalizePath(payload.crash?.file);const originFile=normalizePath(payload.analysis?.file);
+  $('fileName').textContent=state.activeFile||tr('no_source');
+  $('code').innerHTML=lines.length?lines.map((line,index)=>{const number=index+1;const classes=['code-line'];if(number===state.activeLine)classes.push('active');if(state.activeFile===crashFile&&number===Number(payload.crash?.line))classes.push('crash-line');if(state.activeFile===originFile&&number===Number(payload.analysis?.line))classes.push('origin-line');if(state.sourceMatches.some(item=>item.line===number))classes.push('search-line');return `<div class="${classes.join(' ')}" data-line="${number}"><span class="arrow">▶</span><span class="line-no">${number}</span><span class="code">${highlightedLine(line,number)}</span></div>`}).join(''):`<div class="empty-state">${escapeHtml(tr('no_source'))}</div>`;
+  buildFileTree();
+  requestAnimationFrame(()=>scrollToLine(state.sourceQuery&&state.sourceMatches.length?state.sourceMatches[state.sourceMatchIndex].line:state.activeLine));
+}
+function renderVariables(event){const locals=event?.locals||{};const changed=new Set(Object.keys(event?.changes||{}));const names=Object.keys(locals);if(!names.length)return`<div class="empty-state">${escapeHtml(tr('no_variables'))}</div>`;return names.sort().map(name=>`<div class="variable ${changed.has(name)?'changed':''}"><div class="var-top"><span class="var-name">${escapeHtml(name)}</span><span class="var-type">${escapeHtml(valueType(locals[name]))}</span></div><div class="var-value">${escapeHtml(valueText(locals[name]))}</div></div>`).join('')}
+function renderChanges(event){const changes=event?.changes||{};const names=Object.keys(changes);if(!names.length)return`<div class="empty-state">${escapeHtml(tr('no_changes'))}</div>`;return names.map(name=>{const change=changes[name];return`<div class="change"><b>${escapeHtml(name)}</b><div class="before">- ${escapeHtml(valueText(change.before))}</div><div class="after">+ ${escapeHtml(valueText(change.after))}</div></div>`}).join('')}
+function stackAtCurrent(){
+  const currentStep=Number(current()?.step??0);const frames=[];
+  for(const event of allEvents){if(Number(event.step)>currentStep)break;if(event.event==='call')frames.push(event);if(event.event==='return'&&frames.length)frames.pop()}
+  const now=current();if(now&&!frames.some(frame=>frame.function===now.function&&frame.depth===now.depth))frames.push(now);return frames;
+}
+function renderStack(){return stackAtCurrent().slice().reverse().map(frame=>`<div class="frame" data-step="${frame.step}"><span class="frame-depth">${frame.depth}</span><div class="frame-main"><div class="frame-fn">${escapeHtml(frame.function)}()</div><div class="frame-loc">${escapeHtml(normalizePath(frame.file))}:${frame.line}</div></div></div>`).join('')}
+function exceptionItems(){return Array.isArray(payload.exception_chain?.items)?payload.exception_chain.items:[]}
+function exceptionLocation(item){return item?.file?`${normalizePath(item.file)}:${item.line??'—'}`:''}
+function renderExceptions(){
+  const items=exceptionItems();if(!items.length)return`<div class="empty-state">${escapeHtml(tr('no_exception_chain'))}</div>`;
+  const nodes=items.map((item,index)=>{const role=items.length===1?tr('root_exception'):index===0?tr('outer_exception'):index===items.length-1?tr('root_exception'):`#${index+1}`;const notes=(item.notes||[]).length?`<div class="exception-notes"><b>${tr('exception_notes')}:</b> ${item.notes.map(escapeHtml).join('<br>')}</div>`:'';const relation=item.relation_to_next?`<div class="exception-relation">${item.relation_to_next==='cause'?tr('caused_by'):tr('during_handling')}</div>`:'';return`<button class="exception-node ${index===state.selectedException?'selected':''}" data-exception-index="${index}"><div class="exception-role">${escapeHtml(role)}</div><div class="exception-type">${escapeHtml(item.exception_type||'Exception')}</div><div class="exception-message">${escapeHtml(item.message||'')}</div><div class="exception-location">${escapeHtml(exceptionLocation(item)||'—')}</div>${notes}</button>${relation}`}).join('');
+  const warnings=[payload.exception_chain?.truncated?tr('chain_truncated'):'',payload.exception_chain?.cycle_detected?tr('chain_cycle'):''].filter(Boolean).map(value=>`<div class="chain-warning">${escapeHtml(value)}</div>`).join('');return`<div class="exception-chain">${nodes}${warnings}</div>`;
+}
+function jumpException(nextIndex){const item=exceptionItems()[nextIndex];if(!item)return;state.selectedException=nextIndex;if(Number.isInteger(item.event_step)){jumpStep(item.event_step);return}jumpToLocation(item.file,item.line)}
+function renderTab(event){$('tabBody').innerHTML=state.activeTab==='variables'?renderVariables(event):state.activeTab==='changes'?renderChanges(event):state.activeTab==='stack'?renderStack():renderExceptions();document.querySelectorAll('.frame').forEach(element=>element.onclick=()=>jumpStep(Number(element.dataset.step)));document.querySelectorAll('.exception-node').forEach(element=>element.onclick=()=>jumpException(Number(element.dataset.exceptionIndex)))}
+function renderOrigin(){const analysis=payload.analysis;if(!analysis){$('originText').textContent=tr('no_origin');$('jumpOrigin').style.display='none';return}$('originCard').style.display='block';$('originText').textContent=analysis.summary||analysis.reason||tr('no_origin');$('jumpOrigin').style.display=analysis.origin_step==null?'none':'inline-flex'}
+function render(){
+  const event=current();if(!event){renderCode(null);return}
+  state.activeFile=normalizePath(event.file);state.activeLine=Number(event.line)||1;
+  renderCode(event);renderTab(event);
+  $('functionValue').textContent=event.function||'—';$('locationValue').textContent=`${state.activeFile||'—'}:${event.line||'—'}`;
+  $('eventValue').textContent=event.repeat_count?`${event.event} · ${tr('repeat')} ${event.repeat_count} ${tr('times')}`:event.event;
+  $('depthValue').textContent=String(event.depth??0);$('eventBadge').textContent=`#${event.step}`;$('slider').value=String(state.index);$('stepText').textContent=`${tr('step')} ${state.index+1} ${tr('of')} ${state.events.length}`;
+}
+function setMode(next,keepStep){const step=keepStep??current()?.step;state.mode=next==='slice'&&sliceSteps.size?'slice':'all';state.events=selectEvents();let found=state.events.findIndex(event=>event.step===step);state.index=found>=0?found:Math.max(0,state.events.length-1);$('slider').max=String(Math.max(0,state.events.length-1));$('sliceView').classList.toggle('active',state.mode==='slice');$('allView').classList.toggle('active',state.mode==='all');render()}
+function jumpStep(step){let found=state.events.findIndex(event=>event.step===step||eventStepEnd(event)===step);if(found<0&&state.mode==='slice'){setMode('all',step);found=state.events.findIndex(event=>event.step===step||eventStepEnd(event)===step)}if(found>=0){state.index=found;render()}}
+function jumpToLocation(file,line){const normalized=normalizePath(file);let candidates=state.events.map((event,index)=>({event,index})).filter(item=>normalizePath(item.event.file)===normalized);if(!candidates.length&&state.mode==='slice'){setMode('all');candidates=state.events.map((event,index)=>({event,index})).filter(item=>normalizePath(item.event.file)===normalized)}if(candidates.length){candidates.sort((a,b)=>Math.abs(Number(a.event.line)-Number(line))-Math.abs(Number(b.event.line)-Number(line)));state.index=candidates[0].index;render()}else openFile(normalized,line)}
+function move(delta){state.index=Math.min(state.events.length-1,Math.max(0,state.index+delta));render();if(state.index===state.events.length-1&&state.playing)togglePlay(false)}
+function togglePlay(force){state.playing=force??!state.playing;$('play').textContent=state.playing?'❚❚':'▶';clearInterval(state.timer);if(state.playing)state.timer=setInterval(()=>move(1),Number($('speed').value))}
+function sourceUri(){const event=current();if(!event)return'';let path=event.file||'';if(payload.project_root&&!/^(?:[A-Za-z]:[\\/]|\/)/.test(path))path=payload.project_root.replace(/[\\/]$/,'')+'/'+path;return `vscode://file/${encodeURI(path.replaceAll('\\','/'))}:${event.line||1}`}
 function openCurrentSource(){const uri=sourceUri();if(uri)window.location.href=uri}
-function locationText(){const e=current();return e?`${e.file}:${e.line}`:''}
-function diagnosticText(){const e=current();return [`${payload.crash?.exception_type||'Error'}: ${payload.crash?.message||''}`,locationText(),payload.analysis?.summary||'',`step=${e?.step??''}`].filter(Boolean).join('\n')}
+function locationText(){const event=current();return event?`${normalizePath(event.file)}:${event.line}`:''}
+function diagnosticText(){const event=current();const chain=exceptionItems().map((item,index)=>`${index?'  '.repeat(index)+'↳ ':''}${item.exception_type||'Exception'}: ${item.message||''}`).join('\n');return[chain||`${payload.crash?.exception_type||'Error'}: ${payload.crash?.message||''}`,locationText(),payload.analysis?.summary||'',`step=${event?.step??''}`].filter(Boolean).join('\n')}
 async function copy(text){try{await navigator.clipboard.writeText(text);toast(tr('copied'))}catch{toast(tr('copy_failed'))}}
-function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1200)}
-function statsText(){const s=payload.trace_stats||{};const parts=[`${s.retained_events??allEvents.length} ${tr('retained')}`,`${s.discarded_events??0} ${tr('discarded')}`,`${s.compressed_events??0} ${tr('compressed')}`,`${s.report_trimmed_events??0} ${tr('trimmed')}`,`${s.traced_files??0} ${tr('files')}`,`${Number(s.duration_seconds??0).toFixed(3)}s ${tr('trace_time')}`,`${((s.report_size_bytes??0)/1024).toFixed(1)}KB ${tr('report_size')}`];$('stats').innerHTML=parts.map(x=>`<span>${x}</span>`).join('')}
-function applyLanguage(){document.documentElement.lang=language;$('reportTitle').textContent=tr('report_title');$('sourceTitle').textContent=tr('source');$('currentEventTitle').textContent=tr('current_event');$('functionLabel').textContent=tr('function');$('locationLabel').textContent=tr('location');$('eventLabel').textContent=tr('event');$('depthLabel').textContent=tr('depth');$('variablesTab').textContent=tr('variables');$('changesTab').textContent=tr('changes');$('stackTab').textContent=tr('call_stack');$('originTitle').textContent=tr('origin');$('jumpOrigin').textContent=tr('jump_origin');$('sliceView').textContent=tr('crash_slice');$('allView').textContent=tr('all_events');$('openSource').textContent=tr('open_source');$('copyDiagnostic').textContent=tr('copy_diagnostic');$('copyLocation').textContent=tr('copy_location');$('timelineTitle').textContent=tr('timeline');$('speedLabel').textContent=tr('speed');$('shortcuts').textContent=tr('shortcuts');$('languageToggle').textContent=language==='en'?'中文':'EN';renderOrigin();statsText();render()}
-$('slider').oninput=e=>{index=Number(e.target.value);render()};$('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('play').onclick=()=>togglePlay();$('speed').onchange=()=>{if(playing)togglePlay(true)};$('sliceView').onclick=()=>setMode('slice');$('allView').onclick=()=>setMode('all');$('languageToggle').onclick=()=>{language=language==='en'?'zh':'en';applyLanguage()};$('themeToggle').onclick=()=>{const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';$('themeToggle').textContent=root.dataset.theme==='dark'?'☀':'☾'};$('openSource').onclick=openCurrentSource;$('copyDiagnostic').onclick=()=>copy(diagnosticText());$('copyLocation').onclick=()=>copy(locationText());$('jumpOrigin').onclick=()=>jumpStep(Number(payload.analysis?.origin_step));document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{activeTab=tab.dataset.tab;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===tab));renderTab(current())});document.addEventListener('keydown',event=>{if(['INPUT','SELECT','TEXTAREA'].includes(event.target.tagName))return;const key=event.key.toLowerCase();if(event.key==='ArrowLeft'||key==='j'){event.preventDefault();move(-1)}if(event.key==='ArrowRight'||key==='k'){event.preventDefault();move(1)}if(event.code==='Space'){event.preventDefault();togglePlay()}if (key === 'o') openCurrentSource();if (key === 'c') copy(diagnosticText());if (key === 'l') copy(locationText())});
-$('crashText').textContent=`${payload.crash?.exception_type||'Error'}: ${payload.crash?.message||''}`;renderOrigin();setMode('slice');applyLanguage();
+function toast(message){const element=$('toast');element.textContent=message;element.classList.add('show');setTimeout(()=>element.classList.remove('show'),1200)}
+function statsText(){const stats=payload.trace_stats||{};const parts=[`${stats.retained_events??allEvents.length} ${tr('retained')}`,`${stats.discarded_events??0} ${tr('discarded')}`,`${stats.compressed_events??0} ${tr('compressed')}`,`${stats.report_trimmed_events??0} ${tr('trimmed')}`,`${stats.traced_files??sourceKeys.length} ${tr('files')}`,`${Number(stats.duration_seconds??0).toFixed(3)}s ${tr('trace_time')}`,`${((stats.report_size_bytes??0)/1024).toFixed(1)}KB ${tr('report_size')}`];$('stats').innerHTML=parts.map(part=>`<span>${part}</span>`).join('')}
+function showSourceSearch(){closeOverlays();$('sourceSearch').classList.add('open');$('sourceSearchInput').focus();$('sourceSearchInput').select()}
+function closeSourceSearch(){state.sourceQuery='';state.sourceMatches=[];state.sourceMatchIndex=0;$('sourceSearchInput').value='';$('sourceSearch').classList.remove('open');renderCode(current())}
+function updateSourceSearch(){state.sourceQuery=$('sourceSearchInput').value;state.sourceMatches=[];state.sourceMatchIndex=0;renderCode(current());if(state.sourceMatches.length)scrollToLine(state.sourceMatches[0].line)}
+function moveSourceSearch(delta){if(!state.sourceMatches.length)return;state.sourceMatchIndex=(state.sourceMatchIndex+delta+state.sourceMatches.length)%state.sourceMatches.length;renderCode(current());scrollToLine(state.sourceMatches[state.sourceMatchIndex].line,'smooth')}
+function fuzzyScore(query,value){query=query.toLowerCase();value=value.toLowerCase();if(!query)return 0;const exact=value.indexOf(query);if(exact>=0)return exact;let cursor=0;let score=50;for(const char of query){const found=value.indexOf(char,cursor);if(found<0)return Infinity;score+=found-cursor;cursor=found+1}return score}
+function quickOpenResults(query){return sourceKeys.map(file=>({file,score:fuzzyScore(query,file)})).filter(item=>Number.isFinite(item.score)).sort((a,b)=>a.score-b.score||a.file.localeCompare(b.file)).slice(0,80)}
+function renderQuickOpen(){const query=$('quickOpenInput').value;state.quickResults=quickOpenResults(query);state.quickIndex=Math.min(state.quickIndex,Math.max(0,state.quickResults.length-1));$('quickOpenResults').innerHTML=state.quickResults.length?state.quickResults.map((item,index)=>`<button class="palette-result ${index===state.quickIndex?'selected':''}" data-quick-index="${index}"><span class="file-icon">◇</span><span class="result-main"><span class="result-title">${escapeHtml(item.file.split('/').at(-1))}</span><span class="result-subtitle">${escapeHtml(item.file)}</span></span><span class="result-kind">${eventCounts().get(item.file)||0}</span></button>`).join(''):`<div class="empty-state">${escapeHtml(tr('no_search_results'))}</div>`;document.querySelectorAll('[data-quick-index]').forEach(element=>element.onclick=()=>chooseQuick(Number(element.dataset.quickIndex)))}
+function showQuickOpen(){closeOverlays();$('quickOpen').classList.add('open');$('quickOpenInput').value='';state.quickIndex=0;renderQuickOpen();$('quickOpenInput').focus()}
+function chooseQuick(index=state.quickIndex){const result=state.quickResults[index];if(!result)return;closeOverlays();openFile(result.file)}
+function collectGlobalResults(query){
+  const needle=query.trim().toLowerCase();if(!needle)return[];const results=[];const seen=new Set();
+  const add=result=>{const key=`${result.kind}:${result.file}:${result.line}:${result.title}`;if(!seen.has(key)){seen.add(key);results.push(result)}};
+  for(const file of sourceKeys){sourceLines(sourceFor(file)).forEach((line,index)=>{if(line.toLowerCase().includes(needle))add({kind:'source',file,line:index+1,title:line.trim()||tr('source'),subtitle:`${file}:${index+1}`})})}
+  for(const event of allEvents){const file=normalizePath(event.file);if(String(event.function||'').toLowerCase().includes(needle))add({kind:'function',file,line:event.line,title:`${event.function}()`,subtitle:`${file}:${event.line}`,step:event.step});for(const name of Object.keys(event.locals||{})){if(name.toLowerCase().includes(needle))add({kind:'variable',file,line:event.line,title:name,subtitle:`${file}:${event.line} · ${event.function}()`,step:event.step})}}
+  for(const item of exceptionItems()){const text=`${item.exception_type||''} ${item.message||''}`.toLowerCase();if(text.includes(needle))add({kind:'exception',file:normalizePath(item.file),line:item.line,title:`${item.exception_type}: ${item.message}`,subtitle:exceptionLocation(item),step:item.event_step})}
+  return results.slice(0,250);
+}
+function renderGlobalSearch(){state.globalResults=collectGlobalResults($('globalSearchInput').value);state.globalIndex=Math.min(state.globalIndex,Math.max(0,state.globalResults.length-1));$('globalSearchResults').innerHTML=state.globalResults.length?state.globalResults.map((item,index)=>`<button class="palette-result ${index===state.globalIndex?'selected':''}" data-global-index="${index}"><span class="file-icon">⌕</span><span class="result-main"><span class="result-title">${escapeHtml(item.title)}</span><span class="result-subtitle">${escapeHtml(item.subtitle||'')}</span></span><span class="result-kind">${escapeHtml(item.kind)}</span></button>`).join(''):`<div class="empty-state">${escapeHtml(tr('no_search_results'))}</div>`;document.querySelectorAll('[data-global-index]').forEach(element=>element.onclick=()=>chooseGlobal(Number(element.dataset.globalIndex)))}
+function showGlobalSearch(){closeOverlays();$('globalSearch').classList.add('open');$('globalSearchInput').value='';state.globalIndex=0;renderGlobalSearch();$('globalSearchInput').focus()}
+function chooseGlobal(index=state.globalIndex){const result=state.globalResults[index];if(!result)return;closeOverlays();if(Number.isInteger(result.step)){jumpStep(result.step);return}jumpToLocation(result.file,result.line)}
+function closeOverlays(){document.querySelectorAll('.overlay.open').forEach(element=>element.classList.remove('open'))}
+function applyLanguage(){
+  document.documentElement.lang=language;$('reportTitle').textContent=tr('report_title');$('sourceTitle').textContent=tr('source');$('filesTitle').textContent=tr('file_explorer');
+  $('currentEventTitle').textContent=tr('current_event');$('functionLabel').textContent=tr('function');$('locationLabel').textContent=tr('location');$('eventLabel').textContent=tr('event');$('depthLabel').textContent=tr('depth');
+  $('variablesTab').textContent=tr('variables');$('changesTab').textContent=tr('changes');$('stackTab').textContent=tr('call_stack');$('exceptionsTab').textContent=`${tr('exception_chain')} · ${exceptionItems().length}`;
+  $('originTitle').textContent=tr('origin');$('jumpOrigin').textContent=tr('jump_origin');$('sliceView').textContent=tr('crash_slice');$('allView').textContent=tr('all_events');$('openSource').textContent=tr('open_source');$('copyDiagnostic').textContent=tr('copy_diagnostic');$('copyLocation').textContent=tr('copy_location');
+  $('timelineTitle').textContent=tr('timeline');$('speedLabel').textContent=tr('speed');$('shortcuts').textContent=tr('shortcuts');$('languageToggle').textContent=language==='en'?'中文':'EN';
+  $('quickOpenInput').placeholder=tr('quick_open_placeholder');$('globalSearchInput').placeholder=tr('global_search_placeholder');$('sourceSearchInput').placeholder=tr('source_search_placeholder');
+  renderOrigin();statsText();render();
+}
+$('slider').oninput=event=>{state.index=Number(event.target.value);render()};$('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('play').onclick=()=>togglePlay();$('speed').onchange=()=>{if(state.playing)togglePlay(true)};
+$('sliceView').onclick=()=>setMode('slice');$('allView').onclick=()=>setMode('all');$('languageToggle').onclick=()=>{language=language==='en'?'zh':'en';applyLanguage()};
+$('themeToggle').onclick=()=>{const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';$('themeToggle').textContent=root.dataset.theme==='dark'?'☀':'☾'};
+$('openSource').onclick=openCurrentSource;$('copyDiagnostic').onclick=()=>copy(diagnosticText());$('copyLocation').onclick=()=>copy(locationText());$('jumpOrigin').onclick=()=>jumpStep(Number(payload.analysis?.origin_step));
+$('quickOpenButton').onclick=showQuickOpen;$('globalSearchButton').onclick=showGlobalSearch;$('sourceSearchButton').onclick=showSourceSearch;$('sourceSearchClose').onclick=closeSourceSearch;$('sourceSearchNext').onclick=()=>moveSourceSearch(1);$('sourceSearchPrev').onclick=()=>moveSourceSearch(-1);
+$('sourceSearchInput').oninput=updateSourceSearch;$('sourceSearchInput').onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();moveSourceSearch(event.shiftKey?-1:1)}if(event.key==='Escape'){event.preventDefault();closeSourceSearch()}};
+$('quickOpenInput').oninput=()=>{state.quickIndex=0;renderQuickOpen()};$('quickOpenInput').onkeydown=event=>{if(event.key==='ArrowDown'){event.preventDefault();state.quickIndex=Math.min(state.quickResults.length-1,state.quickIndex+1);renderQuickOpen()}if(event.key==='ArrowUp'){event.preventDefault();state.quickIndex=Math.max(0,state.quickIndex-1);renderQuickOpen()}if(event.key==='Enter'){event.preventDefault();chooseQuick()}if(event.key==='Escape')closeOverlays()};
+$('globalSearchInput').oninput=()=>{state.globalIndex=0;renderGlobalSearch()};$('globalSearchInput').onkeydown=event=>{if(event.key==='ArrowDown'){event.preventDefault();state.globalIndex=Math.min(state.globalResults.length-1,state.globalIndex+1);renderGlobalSearch()}if(event.key==='ArrowUp'){event.preventDefault();state.globalIndex=Math.max(0,state.globalIndex-1);renderGlobalSearch()}if(event.key==='Enter'){event.preventDefault();chooseGlobal()}if(event.key==='Escape')closeOverlays()};
+document.querySelectorAll('.overlay').forEach(element=>element.onclick=event=>{if(event.target===element)closeOverlays()});
+document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{state.activeTab=tab.dataset.tab;document.querySelectorAll('.tab').forEach(item=>item.classList.toggle('active',item===tab));renderTab(current())});
+document.addEventListener('keydown',event=>{
+  const key=event.key.toLowerCase();
+  if((event.ctrlKey||event.metaKey)&&key==='p'){event.preventDefault();showQuickOpen();return}
+  if((event.ctrlKey||event.metaKey)&&event.shiftKey&&key==='f'){event.preventDefault();showGlobalSearch();return}
+  if((event.ctrlKey||event.metaKey)&&key==='f'){event.preventDefault();showSourceSearch();return}
+  if(event.key==='Escape'){closeOverlays();return}
+  if(['INPUT','SELECT','TEXTAREA'].includes(event.target.tagName))return;
+  if(event.key==='ArrowLeft'||key==='j'){event.preventDefault();move(-1)}
+  if(event.key==='ArrowRight'||key==='k'){event.preventDefault();move(1)}
+  if(event.code==='Space'){event.preventDefault();togglePlay()}
+  if (key === 'o') openCurrentSource();
+  if (key === 'c') copy(diagnosticText());
+  if (key === 'l') copy(locationText());
+});
+$('crashText').textContent=`${payload.crash?.exception_type||'Error'}: ${payload.crash?.message||''}`;state.events=selectEvents();state.index=Math.max(0,state.events.length-1);setMode(state.mode,current()?.step);applyLanguage();
+}catch(error){showReportError(error)}
 </script>
 </body>
 </html>

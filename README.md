@@ -20,73 +20,45 @@ A local, post-crash time-travel debugger for Python.
 
 **[Open the live interactive report](https://liruixuan0407.github.io/rewindpy/)**
 
-RewindPy records a bounded history of project-local execution events. When an uncaught exception occurs, it writes a self-contained HTML report that lets you move backward through source lines, local values, and variable changes.
+RewindPy records a bounded history of project-local Python execution. After an uncaught exception, it writes one self-contained HTML debugging workspace for source code, local values, changes, call stacks, exception causes, and the execution timeline.
 
 ## Try it in one minute
 
 ```bash
 python -m pip install --upgrade rewindpy
 rewindpy doctor
-rewindpy demo --open
+rewindpy demo multi-file --open
 ```
 
-`rewindpy doctor` checks the interpreter, output permissions, and a complete built-in report smoke test. The demo intentionally crashes, generates `rewindpy-demo.html`, and exits successfully so you can explore the report immediately.
+## What v0.2.0 adds
+
+- Navigate every captured source file with a project-style file explorer.
+- Follow timeline events, call-stack frames, value origins, and exception causes across files.
+- Open files with `Ctrl+P`, search the current file with `Ctrl+F`, and search the whole report with `Ctrl+Shift+F`.
+- Inspect explicit `raise ... from ...` causes, implicit exception contexts, `from None`, notes, and nested tracebacks.
+- Validate report data through Schema v2 and an embedded SHA-256 integrity digest.
+- Exercise the real report UI in Chromium during CI and track report-generation performance.
 
 ## Debug your own script
 
 ```bash
 rewindpy run --open app.py
-
-# Force Chinese or English output
 rewindpy --lang zh run --open app.py
-rewindpy --lang en run --open app.py
-```
-
-Choose the report path and pass arguments to the target program:
-
-```bash
 rewindpy run --output crash.html app.py -- --port 8080
 ```
 
-A crashing target keeps its original non-zero exit code, which makes RewindPy suitable for local scripts and CI reproductions.
+A crashing target keeps its original non-zero exit code. Reports are local HTML files and do not require a server.
 
-## What v0.1.1 can do
+## Report workspace
 
-- Rewind `call`, `line`, `return`, and `exception` events.
-- Inspect source, locals, and per-step value changes.
-- Open a focused **Crash Slice** instead of thousands of unrelated events.
-- Trace a missing dictionary key back to the step where it disappeared.
-- Suggest likely key renames such as `user_id → userid`.
-- Trace a `NoneType` crash back to an assignment or function returning `None`.
-- Jump directly from the crash to the likely value origin.
-- Keep reports local and redact common secret names.
+The report combines:
 
-## Safe tracing
-
-```bash
-rewindpy run --max-events 5000 --include src --exclude tests app.py
-```
-
-RewindPy keeps the newest events in a bounded ring buffer, preserves the crash tail, skips common environment/build directories by default, and shows retained/discarded event statistics in the report. Both `--include` and `--exclude` may be repeated.
-
-### Safe Tracing: report-size protection
-
-```bash
-rewindpy run --max-events 5000 --max-report-mb 10 app.py
-```
-
-RewindPy compresses repeated loops and prioritizes crash slices, exception events, and value origins when a report exceeds its budget.
-
-## pytest integration
-
-After installing RewindPy in your test environment, generate a local report for every failed test:
-
-```bash
-pytest --rewind
-pytest --rewind --rewind-dir reports --rewind-lang zh
-```
-
-Passing tests do not create reports. Failed-test reports are written to `.rewindpy/` by default, while pytest keeps its original output and exit code.
+- a bounded execution timeline with play, pause, step, and speed controls;
+- complete captured source files with current, crash, origin, and search highlights;
+- local variables and per-step changes;
+- a clickable call stack and exception chain;
+- Crash Slice, missing-key origin, likely key rename, and `None`-origin analysis;
+- English and Simplified Chinese UI, dark/light themes, copy diagnostics, and VS Code source links.
 
 ## Built-in demos
 
@@ -94,23 +66,56 @@ Passing tests do not create reports. Failed-test reports are written to `.rewind
 rewindpy demo none-origin --open
 rewindpy demo key-error --open
 rewindpy demo crash-slice --open
+rewindpy demo exception-chain --open
+rewindpy demo multi-file --open
 ```
+
+## pytest integration
+
+```bash
+pytest --rewind
+pytest --rewind --rewind-dir reports --rewind-lang zh
+```
+
+Passing tests do not create reports. Failed-test reports are written to `.rewindpy/` by default, while pytest keeps its normal output and exit code.
+
+## Safe tracing
+
+```bash
+rewindpy run --max-events 5000 --include src --exclude tests app.py
+rewindpy run --max-events 5000 --max-report-mb 10 app.py
+```
+
+RewindPy uses a bounded ring buffer, skips common environment and build directories, compresses repeated loops, preserves crash-critical events, and records retained/discarded statistics.
 
 ## Command reference
 
 ```text
 rewindpy --version
-rewindpy --lang zh --help
+rewindpy --lang auto|en|zh --help
 rewindpy doctor [--json]
-rewindpy [--lang auto|en|zh] demo [none-origin|key-error|crash-slice] [--output FILE] [--open]
-rewindpy [--lang auto|en|zh] run SCRIPT [--output FILE] [--max-events N] [--open] [-- ARGS...]
+rewindpy [--lang auto|en|zh] demo [none-origin|key-error|crash-slice|exception-chain|multi-file] [--output FILE] [--open]
+rewindpy [--lang auto|en|zh] run SCRIPT [--output FILE] [--max-events N] [--include PATH] [--exclude PATH] [--max-report-mb MB] [--open] [-- ARGS...]
 ```
 
-The CLI auto-detects Chinese locales. You can also set `REWINDPY_LANG=zh` or use `--lang zh`. Generated reports include an `EN / 中文` switch.
+## Development and quality gates
+
+```bash
+python -m pip install -e ".[dev,e2e]"
+python -m ruff check .
+python -m pytest -q
+python -m playwright install chromium
+REWINDPY_REQUIRE_BROWSER_E2E=1 python -m pytest -q tests/e2e
+python benchmarks/report_benchmark.py --events 5000 --iterations 3
+python scripts/build_live_demo.py --check
+rewindpy doctor
+```
+
+See [browser testing](docs/browser-e2e.md), [performance](docs/performance.md), [report schema](docs/report-schema-v2.md), [exception chains](docs/exception-chain.md), and [multi-file navigation](docs/multi-file-navigation.md).
 
 ## Current scope
 
-RewindPy v0.1.1 targets Python 3.10+, single-threaded local scripts, uncaught exceptions, and files under the target script's directory.
+RewindPy v0.2.0 targets Python 3.10+, single-threaded local scripts, uncaught exceptions, pytest failures, and Python files under the traced project root.
 
 It is not deterministic replay. It does not yet model async task causality, multiprocessing, native extensions, live breakpoints, or arbitrary mutation inside opaque objects.
 
@@ -118,18 +123,7 @@ It is not deterministic replay. It does not yet model async task causality, mult
 
 Crash reports can contain runtime data. RewindPy writes them locally and redacts variable or dictionary keys containing names such as `password`, `token`, `secret`, and `api_key`. Always review a report before sharing it.
 
-## Development
-
-```bash
-python -m pip install -e ".[dev]"
-python -m ruff check .
-python -m pytest -q
-rewindpy doctor
-python -m build
-python -m twine check dist/*
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) to contribute, [SECURITY.md](SECURITY.md) for private vulnerability reporting, [RELEASING.md](RELEASING.md) for the release process, and [CHANGELOG.md](CHANGELOG.md) for version history.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), [RELEASING.md](RELEASING.md), and [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

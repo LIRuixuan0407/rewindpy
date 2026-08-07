@@ -68,7 +68,7 @@ jobs:
           .release-smoke/bin/python -m pip install --no-deps dist/*.whl
           .release-smoke/bin/rewindpy --version
           .release-smoke/bin/rewindpy --lang en doctor
-          .release-smoke/bin/rewindpy --lang en demo none-origin --output release-smoke.html
+          .release-smoke/bin/rewindpy --lang en demo multi-file --output release-smoke.html
           test -s release-smoke.html
 
       - name: Upload distributions

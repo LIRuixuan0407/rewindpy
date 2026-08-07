@@ -20,70 +20,44 @@
 
 **[打开在线交互报告](https://liruixuan0407.github.io/rewindpy/)**
 
-RewindPy 会记录有数量上限、仅限项目代码的执行事件。当出现未捕获异常时，它会生成一个自包含 HTML 报告，让你向前倒带查看源码行、局部变量和每一步的数值变化。
+RewindPy 会记录有数量上限、仅限项目代码的 Python 执行历史。出现未捕获异常后，它会生成一个自包含 HTML 调试工作区，用于查看源码、局部变量、变化、调用栈、异常原因和执行时间线。
 
 ## 一分钟体验
 
 ```bash
 python -m pip install --upgrade rewindpy
 rewindpy --lang zh doctor
-rewindpy --lang zh demo --open
+rewindpy --lang zh demo multi-file --open
 ```
 
-`rewindpy doctor` 会检查 Python 版本、输出目录权限以及完整的内置报告冒烟测试。内置 Demo 会故意崩溃，生成 `rewindpy-demo.html`，然后以成功状态退出，方便你立即体验报告。
+## v0.2.0 新增能力
+
+- 使用项目式文件资源管理器浏览报告包含的全部源码文件。
+- 时间线、调用栈、数值来源和异常链都能跨文件跳转。
+- 使用 `Ctrl+P` 打开文件、`Ctrl+F` 搜索当前文件、`Ctrl+Shift+F` 搜索整个报告。
+- 展示显式 `raise ... from ...`、隐式异常上下文、`from None`、异常备注和嵌套 traceback。
+- 使用 Report Schema v2 和内嵌 SHA-256 摘要校验报告数据。
+- 在 CI 中用真实 Chromium 验证报告交互，并持续检查报告生成性能。
 
 ## 调试自己的脚本
 
 ```bash
 rewindpy --lang zh run --open app.py
-```
-
-指定报告路径，并把参数传给目标程序：
-
-```bash
 rewindpy --lang zh run --output crash.html app.py -- --port 8080
 ```
 
-目标程序崩溃时会保留原本的非零退出码，因此 RewindPy 也适合本地脚本和 CI 复现流程。
+目标程序崩溃时会保留原本的非零退出码。报告是本地 HTML 文件，不需要额外服务器。
 
-## v0.1.1 能做什么
+## 报告工作区
 
-- 倒带查看 `call`、`line`、`return` 和 `exception` 事件。
-- 查看源码、局部变量和每一步的数值变化。
-- 默认打开聚焦故障上下文的 **崩溃切片**，避免淹没在大量无关事件中。
-- 追踪缺失字典键在哪一步消失。
-- 提示类似 `user_id → userid` 的可能重命名。
-- 将 `NoneType` 崩溃追溯到赋值语句或返回 `None` 的函数。
-- 从崩溃位置直接跳转到可能的数值来源。
-- 报告仅保存在本地，并遮挡常见敏感变量名。
-- CLI 和 HTML 报告支持中英文切换。
+报告包含：
 
-## 安全追踪
-
-```bash
-rewindpy run --max-events 5000 --include src --exclude tests app.py
-```
-
-RewindPy 使用有界环形缓冲区保留最新事件，确保崩溃前的执行尾部不会丢失；默认跳过常见虚拟环境与构建目录，并在报告中展示保留与丢弃事件统计。`--include` 和 `--exclude` 均可重复使用。
-
-### Safe Tracing：报告体积保护
-
-```bash
-rewindpy run --max-events 5000 --max-report-mb 10 app.py
-```
-
-RewindPy 会压缩重复循环，并在报告超过预算时优先保留崩溃切片、异常事件和数值来源。
-
-## pytest 集成
-
-在测试环境中安装 RewindPy 后，可以为每个失败测试生成本地回放报告：
-
-```bash
-pytest --rewind
-pytest --rewind --rewind-dir reports --rewind-lang zh
-```
-
-成功测试不会生成报告。失败报告默认写入 `.rewindpy/`，pytest 原有的错误输出和退出码保持不变。
+- 支持播放、暂停、单步和速度控制的有界执行时间线；
+- 完整源码，以及当前行、崩溃行、来源行和搜索匹配高亮；
+- 局部变量和每一步的变量变化；
+- 可点击的调用栈和异常链；
+- 崩溃切片、缺失键来源、可能重命名和 `None` 来源分析；
+- 中英文界面、深浅主题、复制诊断信息和 VS Code 源码跳转。
 
 ## 内置演示
 
@@ -91,23 +65,56 @@ pytest --rewind --rewind-dir reports --rewind-lang zh
 rewindpy --lang zh demo none-origin --open
 rewindpy --lang zh demo key-error --open
 rewindpy --lang zh demo crash-slice --open
+rewindpy --lang zh demo exception-chain --open
+rewindpy --lang zh demo multi-file --open
 ```
+
+## pytest 集成
+
+```bash
+pytest --rewind
+pytest --rewind --rewind-dir reports --rewind-lang zh
+```
+
+成功测试不会生成报告。失败报告默认写入 `.rewindpy/`，pytest 原有输出和退出码保持不变。
+
+## 安全追踪
+
+```bash
+rewindpy run --max-events 5000 --include src --exclude tests app.py
+rewindpy run --max-events 5000 --max-report-mb 10 app.py
+```
+
+RewindPy 使用有界环形缓冲区，跳过常见环境和构建目录，压缩重复循环，优先保留与崩溃相关的事件，并记录保留与丢弃统计。
 
 ## 命令参考
 
 ```text
 rewindpy --version
-rewindpy --lang zh --help
-rewindpy [--lang auto|en|zh] doctor [--json]
-rewindpy [--lang auto|en|zh] demo [none-origin|key-error|crash-slice] [--output FILE] [--open]
-rewindpy [--lang auto|en|zh] run SCRIPT [--output FILE] [--max-events N] [--open] [-- ARGS...]
+rewindpy --lang auto|en|zh --help
+rewindpy doctor [--json]
+rewindpy [--lang auto|en|zh] demo [none-origin|key-error|crash-slice|exception-chain|multi-file] [--output FILE] [--open]
+rewindpy [--lang auto|en|zh] run SCRIPT [--output FILE] [--max-events N] [--include PATH] [--exclude PATH] [--max-report-mb MB] [--open] [-- ARGS...]
 ```
 
-默认情况下，CLI 会根据系统语言自动选择中文或英文。也可以设置 `REWINDPY_LANG=zh`，或者显式添加 `--lang zh`。生成的 HTML 报告右上角可以直接切换 `EN / 中文`。
+## 开发与质量检查
+
+```bash
+python -m pip install -e ".[dev,e2e]"
+python -m ruff check .
+python -m pytest -q
+python -m playwright install chromium
+REWINDPY_REQUIRE_BROWSER_E2E=1 python -m pytest -q tests/e2e
+python benchmarks/report_benchmark.py --events 5000 --iterations 3
+python scripts/build_live_demo.py --check
+rewindpy doctor
+```
+
+更多说明见 [浏览器测试](docs/browser-e2e.md)、[性能基准](docs/performance.md)、[报告格式](docs/report-schema-v2.md)、[异常链](docs/exception-chain.md) 和 [多文件导航](docs/multi-file-navigation.md)。
 
 ## 当前范围
 
-RewindPy v0.1.1 面向 Python 3.10+、单线程本地脚本、未捕获异常，以及目标脚本目录下的项目文件。
+RewindPy v0.2.0 面向 Python 3.10+、单线程本地脚本、未捕获异常、pytest 失败，以及被追踪项目根目录下的 Python 文件。
 
 它不是确定性重放工具。目前不会建模异步任务因果关系、多进程、原生扩展、实时断点或不透明对象内部的任意变化。
 
@@ -115,18 +122,7 @@ RewindPy v0.1.1 面向 Python 3.10+、单线程本地脚本、未捕获异常，
 
 崩溃报告可能包含运行时数据。RewindPy 只在本地写入报告，并遮挡名称中包含 `password`、`token`、`secret`、`api_key` 等关键词的变量或字典键。分享报告前仍然需要人工检查。
 
-## 开发
-
-```bash
-python -m pip install -e ".[dev]"
-python -m ruff check .
-python -m pytest -q
-rewindpy doctor
-python -m build
-python -m twine check dist/*
-```
-
-贡献说明请查看 [CONTRIBUTING.md](CONTRIBUTING.md)，安全问题请查看 [SECURITY.md](SECURITY.md)，发布流程请查看 [RELEASING.md](RELEASING.md)，版本历史请查看 [CHANGELOG.md](CHANGELOG.md)。
+贡献、安全、发布与版本历史请查看 [CONTRIBUTING.md](CONTRIBUTING.md)、[SECURITY.md](SECURITY.md)、[RELEASING.md](RELEASING.md) 和 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 许可证
 
