@@ -73,9 +73,48 @@ print(user["user_id"])
 ''',
 }
 
+_MULTI_FILE_DEMOS: dict[str, tuple[str, dict[str, str]]] = {
+    "multi-file": (
+        "app.py",
+        {
+            "app.py": '''from service import start_application
+
+
+start_application()
+''',
+            "service.py": '''from config_loader import load_config
+
+
+class StartupError(RuntimeError):
+    pass
+
+
+def start_application():
+    try:
+        config = load_config()
+        return config["database"]["url"]
+    except ValueError as exc:
+        raise StartupError("application startup failed") from exc
+''',
+            "config_loader.py": '''import json
+
+
+def load_config():
+    raw = '{"database": {"url": "sqlite:///demo.db",}}'
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as exc:
+        if hasattr(exc, "add_note"):
+            exc.add_note("The multi-file demo intentionally uses malformed JSON.")
+        raise ValueError("configuration is not valid JSON") from exc
+''',
+        },
+    ),
+}
+
 
 def demo_names() -> tuple[str, ...]:
-    return tuple(_DEMOS)
+    return tuple((*_DEMOS, *_MULTI_FILE_DEMOS))
 
 
 def create_demo_report(
@@ -86,15 +125,23 @@ def create_demo_report(
     open_report: bool = False,
     language: str = "en",
 ) -> Path:
-    try:
-        source = _DEMOS[kind]
-    except KeyError as exc:
-        raise ValueError(text(language, "unknown_demo", kind=kind)) from exc
-
     output = output.resolve()
     with tempfile.TemporaryDirectory(prefix="rewindpy-demo-") as temp_dir:
-        target = Path(temp_dir) / f"{kind.replace('-', '_')}.py"
-        target.write_text(source, encoding="utf-8")
+        root = Path(temp_dir)
+        if kind in _MULTI_FILE_DEMOS:
+            entrypoint, files = _MULTI_FILE_DEMOS[kind]
+            for relative, source in files.items():
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_text(source, encoding="utf-8")
+            target = root / entrypoint
+        else:
+            try:
+                source = _DEMOS[kind]
+            except KeyError as exc:
+                raise ValueError(text(language, "unknown_demo", kind=kind)) from exc
+            target = root / f"{kind.replace('-', '_')}.py"
+            target.write_text(source, encoding="utf-8")
         run_target(
             target,
             [],
