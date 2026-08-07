@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from rewindpy.schema import verify_report_integrity
-from scripts.build_live_demo import _stable_value, build_live_demo
+from scripts.build_live_demo import _normalize_frame, _stable_value, build_live_demo
 
 
 def _payload(path: Path) -> dict:
@@ -29,6 +29,16 @@ def test_live_demo_normalizes_python_module_paths() -> None:
 
     assert _stable_value(local) == expected
     assert _stable_value(github) == expected
+
+
+def test_live_demo_normalizes_runtime_frame_lines() -> None:
+    frame = {"file": "<frozen runpy>", "line": 286, "project_file": False}
+
+    assert _normalize_frame(frame) == {
+        "file": "<runtime>/<frozen runpy>",
+        "line": 0,
+        "project_file": False,
+    }
 
 
 def test_live_demo_is_deterministic_and_multi_file(tmp_path: Path) -> None:

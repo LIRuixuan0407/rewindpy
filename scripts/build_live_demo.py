@@ -36,6 +36,7 @@ def _normalize_frame(frame: dict[str, Any]) -> dict[str, Any]:
     if not normalized.get("project_file"):
         file_name = Path(str(normalized.get("file", ""))).name
         normalized["file"] = f"<runtime>/{file_name}" if file_name else "<runtime>"
+        normalized["line"] = 0
     return normalized
 
 
